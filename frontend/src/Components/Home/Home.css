@@ -1,0 +1,135 @@
+.home-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Space between logo and title */
+  padding: 10px; /* Padding around the header */
+  background-color: darkblue;
+  flex-shrink: 0;
+  height: 80px;
+}
+.header h1{
+  color: wheat;
+}
+
+
+.project-title {
+  flex-grow: 1;
+  text-align: center;
+  font-size: 1.5rem;
+}
+
+.menu-bar {
+  background-color: #343a40;
+  padding: 10px;
+}
+
+.menu-bar ul {
+  list-style: none;
+  display: flex;
+  justify-content: flex-start;
+  padding: 0;
+  margin: 0;
+}
+
+.menu-bar li {
+  color: white;
+  margin-right: 20px;
+  cursor: pointer;
+}
+
+.menu-bar li:hover {
+  transition: background-color 0.3s ease;
+}
+
+.top-actions {
+  display: flex;
+  justify-content: center; /* Center the action buttons */
+  align-items: center; /* Center vertically */
+  padding: 10px; /* Adjust as needed */
+  width: 100%; /* Full width */
+}
+
+
+.search-container {
+  display: flex;
+  align-items: center; /* Center the search button and input */
+  margin-left: auto; /* Push the search container to the right */
+}
+
+.action-button {
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center; /* Center content inside the button */
+  padding: 10px 15px; /* Adjusted padding */
+  background-color: blue;
+  margin: 0 5px; /* Adjusted margin for spacing */
+  width: 300px; /* Fixed width */
+  font-weight: 1000;
+  font-size: larger;
+}
+
+.search-button {
+  padding: 8px 12px; /* Adjusted padding */
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-left: 5px; /* Reduced margin for closer spacing */
+  font-weight: 1000;
+  font-size: larger;
+}
+
+.search-input {
+  padding: 8px; /* Adjusted padding */
+  border: 5px solid #ced4da;
+  border-radius: 5px;
+  margin-left: 5px; /* Reduced margin for closer spacing */
+}
+
+.content {
+  flex-grow: 1;
+  padding: 20px;
+  background-color: #ffffff;
+  overflow-y: auto;
+}
+.logo {
+  height: 60px; /* Adjust as needed */
+  max-width: 100%; /* Ensure responsiveness */
+  object-fit: contain; /* Maintain aspect ratio */
+}
+.search-container{
+  margin-right: 0px;
+}
+
+.data-table {
+  width: 100%; /* Full width */
+  border-collapse: collapse; /* Collapse borders */
+  margin-top: 100px; /* Space above the table */
+}
+
+.data-table th,
+.data-table td {
+  border: 1px solid #dddddd; /* Light gray border */
+  text-align: left; /* Align text to the left */
+  padding: 15px; /* Padding inside cells */
+}
+
+.data-table th {
+  background-color: #007bff; /* Blue background for header */
+  color: white; /* White text color */
+}
+
+
+
+

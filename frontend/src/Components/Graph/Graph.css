@@ -1,0 +1,16 @@
+.graph-container {
+  display: flex;
+  justify-content: space-around; /* or "space-between" or "center" depending on spacing preference */
+  align-items: flex-start; /* aligns the top of each chart */
+  gap: 5px; /* spacing between the charts */
+  flex-wrap: wrap; /* optional: wraps on smaller screens */
+  margin-top: 20px;
+}
+
+.graph-1, .graph-2 {
+  flex: 1;
+  min-width: 300px; /* ensures the graphs don't get too small */
+  max-width: 600px;
+  text-align: center;
+}
+

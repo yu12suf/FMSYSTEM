@@ -1,0 +1,169 @@
+.form {
+  display: flex;
+  flex-wrap: wrap;
+  /*flex-direction: column;
+  gap: 1px;*/
+  justify-content: space-between;
+}
+
+.form-column{
+  flex: 1;
+  margin-right: 20px;
+}
+
+.form-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  flex-basis: 30%;
+}
+
+.form-group label {
+  width: 200px;
+  margin-right: 10px;
+  text-align: right;
+  /*white-space: nowrap;*/
+}
+.form-group input{
+  flex: 0;
+  padding: 5px;
+  width: 150px;
+  
+  
+}
+
+.form-group select{
+  flex: 0;
+  padding: 5px;
+  width: 150px;
+  
+  
+}
+
+
+.form-group-1 {
+  margin-left: -80px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  flex-basis: 30%;
+}
+
+.form-group-1 label {
+  width: 200px;
+  margin-right: 10px;
+  text-align: right;
+  /*white-space: nowrap;*/
+}
+.form-group-1 input{
+  flex: 0;
+  padding: 5px;
+  width: 150px;
+  
+  
+}
+.uniq-title{
+  margin-left: 130px;
+}
+.form-column-4 .uniq-title{
+  margin-left: 160px;
+}
+.form-column-1{
+  flex: 1;
+  margin-right: 10px;
+  
+}
+
+.form-column-4{
+  flex: 1;
+  margin-right: 10px;
+  margin-left: -10px;
+  margin-top: 0px;
+}
+
+
+.form-column-2 {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* horizontally center content */
+  margin-right: 120px;
+  margin-bottom: auto;
+}
+.form-column-3{
+  margin-bottom: auto;
+}
+.form-column-5 {
+  flex: 1;
+  /*display: flex;*/
+  flex-direction: column;
+  align-items: center; /* horizontally center content */
+}
+.form-column-3 {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* horizontally center content */
+}
+.form-column-6{
+  margin-right: 20px;
+}
+
+.form-1 {
+  display: flex;
+  flex-wrap: wrap;
+  /*flex-direction: column;
+  gap: 1px;*/
+  justify-content: space-between;
+}
+.form-group .year-label{
+  margin-left: 100px;
+  flex-shrink: 0;
+}
+.form-group.last-year{
+  margin-left: 98px;
+  
+}
+
+
+.button-container-1 {
+  display: flex; /* Use Flexbox for horizontal alignment */
+  justify-content: center; /* Space between buttons */
+  margin-top: 20px; /* Space above the buttons */
+  margin-left: 300px;
+}
+.submit-button-1 {
+  padding: 5px 10px; /* Smaller padding for a minimized button */
+  font-size: 12px; /* Smaller font size */
+  margin: 0 5px; /* Space between buttons */
+  flex: 1; /* Allow buttons to grow equally */
+  min-width: 100px;
+  background-color: blue;
+  border: none;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.button-container-1 button:hover {
+  background-color: #0056b3;
+}
+
+.search-bar input {
+  padding: 8px; /* Adjusted padding */
+  border: 5px solid #ced4da;
+  border-radius: 5px;
+  margin-left: 5px; /* Reduced margin for closer spacing */
+  margin-bottom: 30px;
+  transition: border-color 0.3s ease;
+}
+.search-bar button {
+  padding: 8px 12px; /* Adjusted padding */
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-left: 5px; /* Reduced margin for closer spacing */
+  margin-top: 10px;
+}

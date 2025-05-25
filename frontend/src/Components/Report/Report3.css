@@ -1,0 +1,146 @@
+/* Report3.css */
+
+.preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: white;
+  }
+  
+  .preview-table th,
+  .preview-table td {
+    border: 1px solid #333;
+    padding: 8px 12px;
+    text-align: left;
+  }
+  
+  .preview-table th {
+    background-color: #f2f2f2;
+  }
+  
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .modal-content {
+    background: #fff;
+    padding: 20px;
+    width: 90%;
+    max-width: 800px;
+    border-radius: 10px;
+    position: relative;
+    overflow-y: auto;
+    max-height: 90vh;
+  }
+  
+  .close-button {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: #d33;
+    color: white;
+    border: none;
+    font-size: 20px;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+  }
+  
+  .close-button:hover {
+    background: #a00;
+  }
+  .preview-table thead th{
+    background-color: darkblue;
+    color: white;
+  }
+  .preview-table td:last-child{
+    background-color: green;
+  }
+
+  /* button styles */
+  .horizontal-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem; /* space between select and buttons */
+}
+
+.select-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.button-group-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem; /* space between Preview and Print buttons */
+}
+
+.button-group-vertical button {
+  padding: 6px 12px;
+  cursor: pointer;
+  background-color: blue;
+  border: none;
+  color: white;
+  border-radius: 3px;
+}
+.report3-header{
+  text-align: center;
+}
+
+
+/* Responsive styles for Report3 */
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95%;
+    padding: 15px;
+    max-height: 85vh;
+  }
+
+  .preview-table {
+    font-size: 14px;
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .preview-table th,
+  .preview-table td {
+    padding: 6px 8px;
+  }
+
+  .horizontal-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .button-group-vertical {
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .button-group-vertical button {
+    width: 100%;
+    font-size: 14px;
+  }
+
+  .close-button {
+    width: 28px;
+    height: 28px;
+    font-size: 18px;
+  }
+
+  .report3-header {
+    font-size: 20px;
+    padding-bottom: 10px;
+  }
+}
