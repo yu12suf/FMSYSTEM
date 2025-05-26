@@ -203,6 +203,7 @@ class ServiceOfEstateStats(APIView):
         return Response(stats)    
 @api_view(['POST'])
 def upload_files(request, upin):
+    print("Received UPIN:", upin)
     try:
         record = Record.objects.get(UPIN=upin)
     except Record.DoesNotExist:

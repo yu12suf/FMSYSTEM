@@ -3,7 +3,7 @@ import axios from "axios";
 import "./FileUploader.css";
 import { useParams } from "react-router-dom";
 
-export default function FileUploader({ onUploadComplete, onRefresh }) {
+export default function FileUploader({ upin, onUploadComplete, onRefresh }) {
   const [files, setFiles] = useState([]);
   const [step, setStep] = useState(1);
   const [newName, setNewName] = useState("");
@@ -13,7 +13,7 @@ export default function FileUploader({ onUploadComplete, onRefresh }) {
   const [editFile, setEditFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
 
-  const { upin } = useParams();
+  // const { upin } = useParams();
 
   const handleNext = () => {
     if (newName.trim()) setStep(2);
@@ -80,10 +80,18 @@ export default function FileUploader({ onUploadComplete, onRefresh }) {
     const uploadedFileList = []; // Collect uploaded files here
 
     try {
+      console.log("UPIN value:", upin);
       for (const entry of files) {
         const form = new FormData();
         form.append("uploadedFile", entry.file);
         form.append("ExistingArchiveCode", entry.name);
+
+        if (!upin) {
+          alert(
+            "UPIN is missing! Please ensure it's correctly passed from AddFile.js."
+          );
+          return;
+        }
 
         // Upload file for each entry
         await axios.post(

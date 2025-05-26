@@ -421,6 +421,30 @@ const AddFile = () => {
     console.log("Refresh records triggered");
   };
 
+  const handleSaveRecordFirst = async () => {
+    if (!formData.SomeOtherRequiredField || !formData.AnotherRequiredField) {
+      alert("Missing required fields. Please complete the form.");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        "http://localhost:8000/api/records/",
+        formData
+      );
+      if (response.status === 201) {
+        console.log("Record saved successfully:", response.data);
+        setFormData((prevData) => ({
+          ...prevData,
+          UPIN: response.data.UPIN, // Ensure UPIN is updated
+        }));
+      }
+    } catch (error) {
+      console.error("Failed to save record first:", error);
+      alert("There was a problem saving your record. Please try again.");
+    }
+  };
+
   if (showFileUploader) {
     return (
       <FileUploader
@@ -669,7 +693,32 @@ const AddFile = () => {
 
           <div className="button-container">
             <button
-              onClick={() => setShowFileUploader(true)}
+              onClick={async () => {
+                // ✅ First: Validate required fields
+                if (
+                  !formData.SomeOtherRequiredField ||
+                  !formData.AnotherRequiredField
+                ) {
+                  alert(
+                    "Please fill in all required fields before uploading files."
+                  );
+                  return;
+                }
+
+                // ✅ Then: Save the record
+                await handleSaveRecordFirst();
+
+                // ✅ Check UPIN again after saving
+                if (!formData.UPIN) {
+                  alert(
+                    "Failed to generate UPIN. Please try saving the record again."
+                  );
+                  return;
+                }
+
+                // ✅ Show the file uploader if all checks pass
+                setShowFileUploader(true);
+              }}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
             >
               Upload Files
