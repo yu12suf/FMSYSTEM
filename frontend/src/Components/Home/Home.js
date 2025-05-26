@@ -175,54 +175,59 @@ const Home = () => {
 
       <nav className="menu-bar">
         <ul>
-          <li
-            onClick={() => {
-              setCurrentPage("home");
-              setShowAddFile(false);
-              setshowEditFile(false);
-            }}
-          >
-            ፋይል ቆጠራ
-          </li>
-          <li
-            onClick={() => {
-              setCurrentPage("files");
-              setShowAddFile(false);
-              setshowEditFile(false);
-            }}
-          >
-            ማውጫ
-          </li>
-          <li
-            onClick={() => {
-              setCurrentPage("report");
-              setShowAddFile(false);
-              setshowEditFile(false);
-            }}
-          >
-            ሪፖርት
-          </li>
-          <li
-            onClick={() => {
-              setCurrentPage("graph");
-              setShowAddFile(false);
-              setshowEditFile(false);
-            }}
-          >
-            ግራፍ
-          </li>
-          <li
-            onClick={() => {
-              setCurrentPage("history");
-              setShowAddFile(false);
-              setshowEditFile(false);
-            }}
-          >
-            History
-          </li>
-          <li onClick={() => navigate("/")} className="logout">
-            Logout
-          </li>
+          <div className="menu-left">
+            <li
+              onClick={() => {
+                setCurrentPage("home");
+                setShowAddFile(false);
+                setshowEditFile(false);
+              }}
+            >
+              ፋይል ቆጠራ
+            </li>
+            <li
+              onClick={() => {
+                setCurrentPage("files");
+                setShowAddFile(false);
+                setshowEditFile(false);
+              }}
+            >
+              ማውጫ
+            </li>
+            <li
+              onClick={() => {
+                setCurrentPage("report");
+                setShowAddFile(false);
+                setshowEditFile(false);
+              }}
+            >
+              ሪፖርት
+            </li>
+            <li
+              onClick={() => {
+                setCurrentPage("graph");
+                setShowAddFile(false);
+                setshowEditFile(false);
+              }}
+            >
+              ግራፍ
+            </li>
+          </div>
+
+          <div className="menu-right">
+            <li
+              onClick={() => {
+                setCurrentPage("history");
+                setShowAddFile(false);
+                setshowEditFile(false);
+              }}
+            >
+              History
+            </li>
+            <li onClick={() => navigate("/")} className="logout">
+              Logout
+            </li>
+          </div>
         </ul>
       </nav>
 

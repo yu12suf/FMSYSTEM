@@ -346,7 +346,7 @@ const ViewFile = () => {
       </div>
 
       {/* Form Section */}
-      <div className="form-1">
+      <div className="form">
         {/* Column 1 */}
         <div className="form-column-1">
           <h3 className="uniq-title">Unique information</h3>
@@ -598,13 +598,14 @@ const ViewFile = () => {
             </select>
           </div>
 
-          <div className="form-group" style={{ marginLeft: "14px" }}>
+          <div className="form-group" style={{ marginRight: "16px" }}>
             <label>የቦታ ስፋት</label>
             <input
               type="number"
               name="spaceSize"
               value={formData.spaceSize}
               onChange={handleChange}
+              style={{ width: "120px" }}
             />
           </div>
           <div className="form-group">

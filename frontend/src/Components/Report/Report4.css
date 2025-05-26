@@ -93,6 +93,10 @@
   color: white;
   border-radius: 3px;
 }
+.button-group-vertical button:hover {
+    background: #a00;
+  }
+
 .report4-header{
   text-align: center;
 }

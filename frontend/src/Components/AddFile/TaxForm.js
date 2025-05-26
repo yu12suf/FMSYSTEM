@@ -18,7 +18,8 @@ const TaxForm = ({ debt }) => {
             style={{
               border: "1px solid #ccc",
               padding: "3px",
-              backgroundColor: "#f2f2f2",
+              backgroundColor: "green",
+              color: "white",
             }}
           >
             ውዝፍ

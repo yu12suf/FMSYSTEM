@@ -27,6 +27,9 @@
 
 .report-button:hover {
     background-color: #005f7f;
+      background: linear-gradient(to right, #28a745, yellow);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .kebele-label {

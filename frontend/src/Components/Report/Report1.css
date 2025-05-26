@@ -92,7 +92,13 @@
   border: none;
   color: white;
   border-radius: 3px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
+.button-group-vertical button:hover {
+    background: #a00;
+  }
+
 .report1-header{
   text-align: center;
 }

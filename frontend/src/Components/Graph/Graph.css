@@ -1,16 +1,85 @@
-.graph-container {
+/*.graph-container {
   display: flex;
-  justify-content: space-around; /* or "space-between" or "center" depending on spacing preference */
-  align-items: flex-start; /* aligns the top of each chart */
-  gap: 5px; /* spacing between the charts */
-  flex-wrap: wrap; /* optional: wraps on smaller screens */
+  justify-content: space-around; /* or "space-between" or "center" depending on spacing preference 
+  align-items: flex-start; /* aligns the top of each chart 
+  gap: 5px; /* spacing between the charts 
+  flex-wrap: wrap; /* optional: wraps on smaller screens 
   margin-top: 20px;
 }
 
 .graph-1, .graph-2 {
   flex: 1;
-  min-width: 300px; /* ensures the graphs don't get too small */
+  min-width: 300px; /* ensures the graphs don't get too small 
   max-width: 600px;
   text-align: center;
+}
+*/
+
+.graph-container {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  gap: 30px;
+  flex-wrap: wrap;
+  margin: 40px 20px;
+}
+
+.graph-1, .graph-2 {
+  flex: 1;
+  min-width: 300px;
+  max-width: 600px;
+  text-align: center;
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  margin-bottom: 10px;
+  margin-top: 20px;
+}
+
+.graph-1:hover, .graph-2:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+}
+
+.graph-1 h2, .graph-2 h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #4e54c8;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 10px;
+}
+
+
+.recharts-default-legend {
+  display: flex !important;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  max-width: 100%;
+}
+
+.recharts-legend-item {
+  display: flex !important;
+  align-items: center;
+  margin: 8px 12px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: background-color 0.2s ease;
+}
+
+.recharts-legend-item:hover {
+  background-color: #e2e6ea;
+}
+
+.recharts-surface {
+  margin-right: 8px;
 }
 

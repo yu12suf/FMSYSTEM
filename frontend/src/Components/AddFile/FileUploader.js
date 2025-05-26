@@ -1,39 +1,136 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate, useLocation } from "react-router-dom";
 import "./FileUploader.css";
-import { useParams } from "react-router-dom";
 
-export default function FileUploader({ upin, onUploadComplete, onRefresh }) {
-  const [files, setFiles] = useState([]);
+const REQUIRED_FILES = [
+  "የይዞታ ማረጋገጫ ፋይል",
+  "ሊዝ የተከፈለበት ደረሰኝ ፋይል",
+  "የንብረት ግብር ደረሰኝ ፋይል",
+  "የግብር ደረሰኝ ፋይል",
+];
+
+export default function FileUploader() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const upin = new URLSearchParams(location.search).get("upin");
+
+  // State for required files: { name, file, url, type, date }
+  const [requiredFiles, setRequiredFiles] = useState(() => {
+    const saved = sessionStorage.getItem("requiredFiles");
+    if (saved) return JSON.parse(saved);
+    return REQUIRED_FILES.map((name) => ({
+      name,
+      file: null,
+      url: null,
+      type: "",
+      date: "",
+      originalName: "",
+    }));
+  });
+
+  // State for additional files
+  const [files, setFiles] = useState(() => {
+    const saved = sessionStorage.getItem("tempFiles");
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // Additional file upload state
   const [step, setStep] = useState(1);
   const [newName, setNewName] = useState("");
   const [newFile, setNewFile] = useState(null);
   const [editingIndex, setEditingIndex] = useState(null);
   const [editName, setEditName] = useState("");
   const [editFile, setEditFile] = useState(null);
-  const [isUploading, setIsUploading] = useState(false);
 
-  // const { upin } = useParams();
+  // Persist requiredFiles and files to sessionStorage
+  useEffect(() => {
+    sessionStorage.setItem("requiredFiles", JSON.stringify(requiredFiles));
+  }, [requiredFiles]);
+  useEffect(() => {
+    sessionStorage.setItem("tempFiles", JSON.stringify(files));
+  }, [files]);
 
+  // File type/size validation
+  const allowedTypes = [
+    "image/png",
+    "image/jpeg",
+    "application/pdf",
+    "text/plain",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ];
+  const maxSizeMB = 10;
+
+  // Handle required file upload
+  const handleRequiredFileChange = (idx, e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!allowedTypes.includes(file.type)) {
+      alert("This file type is not allowed.");
+      return;
+    }
+    if (file.size > maxSizeMB * 1024 * 1024) {
+      alert("File is too large. Max size is 10MB.");
+      return;
+    }
+    const blobURL = URL.createObjectURL(file);
+    const updated = [...requiredFiles];
+    updated[idx] = {
+      ...updated[idx],
+      file,
+      url: blobURL,
+      type: file.type,
+      date: new Date().toLocaleString(),
+      originalName: file.name,
+    };
+    setRequiredFiles(updated);
+  };
+
+  // Remove required file
+  const handleRemoveRequiredFile = (idx) => {
+    const updated = [...requiredFiles];
+    if (updated[idx].url) URL.revokeObjectURL(updated[idx].url);
+    updated[idx] = {
+      ...updated[idx],
+      file: null,
+      url: null,
+      type: "",
+      date: "",
+      originalName: "",
+    };
+    setRequiredFiles(updated);
+  };
+
+  // Additional file logic (unchanged)
   const handleNext = () => {
     if (newName.trim()) setStep(2);
   };
 
   const handleFileSelect = (e) => {
-    const selectedFile = e.target.files[0];
-    if (selectedFile) {
-      setNewFile(selectedFile);
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!allowedTypes.includes(file.type)) {
+      alert("This file type is not allowed.");
+      return;
     }
+    if (file.size > maxSizeMB * 1024 * 1024) {
+      alert("File is too large. Max size is 10MB.");
+      return;
+    }
+    setNewFile(file);
   };
 
   const handleAddFile = () => {
     if (!newFile || files.length >= 20) return;
+    const blobURL = URL.createObjectURL(newFile);
     const entry = {
       name: newName,
       originalName: newFile.name,
       type: newFile.type,
       date: new Date().toLocaleString(),
       file: newFile,
+      url: blobURL,
     };
     setFiles((prev) => [...prev, entry]);
     setNewName("");
@@ -48,12 +145,24 @@ export default function FileUploader({ upin, onUploadComplete, onRefresh }) {
   };
 
   const handleEditFileSelect = (e) => {
-    const file = e.target.files[0];
-    if (file) setEditFile(file);
+    const f = e.target.files[0];
+    if (!f) return;
+    if (!allowedTypes.includes(f.type)) {
+      alert("This file type is not allowed.");
+      return;
+    }
+    if (f.size > maxSizeMB * 1024 * 1024) {
+      alert("File is too large. Max size is 10MB.");
+      return;
+    }
+    setEditFile(f);
   };
 
   const handleSaveEdit = () => {
     const updated = [...files];
+    const newBlobURL = editFile
+      ? URL.createObjectURL(editFile)
+      : updated[editingIndex].url;
     updated[editingIndex] = {
       ...updated[editingIndex],
       name: editName,
@@ -63,6 +172,7 @@ export default function FileUploader({ upin, onUploadComplete, onRefresh }) {
       type: editFile ? editFile.type : updated[editingIndex].type,
       date: new Date().toLocaleString(),
       file: editFile || updated[editingIndex].file,
+      url: newBlobURL,
     };
     setFiles(updated);
     setEditingIndex(null);
@@ -70,147 +180,270 @@ export default function FileUploader({ upin, onUploadComplete, onRefresh }) {
   };
 
   const handleDelete = (idx) => {
+    const toDelete = files[idx];
+    if (toDelete.url) URL.revokeObjectURL(toDelete.url);
     setFiles((prev) => prev.filter((_, i) => i !== idx));
   };
 
+  // Only allow final save if all required files are present
+  const allRequiredUploaded = requiredFiles.every((f) => !!f.file);
+
   const handleFinalSave = async () => {
-    if (!files.length || isUploading) return;
-    setIsUploading(true);
-
-    const uploadedFileList = []; // Collect uploaded files here
-
+    if (!allRequiredUploaded) {
+      alert("Please upload all required files before saving.");
+      return;
+    }
     try {
-      console.log("UPIN value:", upin);
-      for (const entry of files) {
-        const form = new FormData();
-        form.append("uploadedFile", entry.file);
-        form.append("ExistingArchiveCode", entry.name);
-
-        if (!upin) {
-          alert(
-            "UPIN is missing! Please ensure it's correctly passed from AddFile.js."
+      if (upin) {
+        const formData = new FormData();
+        // Attach required files with their names and a category
+        requiredFiles.forEach((fileObj, index) => {
+          formData.append("files", fileObj.file);
+          formData.append(`names[${index}]`, fileObj.name);
+          formData.append(`categories[${index}]`, "required");
+        });
+        // Attach additional files with their names and a category
+        files.forEach((file, index) => {
+          formData.append("files", file.file);
+          formData.append(`names[${index + requiredFiles.length}]`, file.name);
+          formData.append(
+            `categories[${index + requiredFiles.length}]`,
+            "additional"
           );
-          return;
-        }
+        });
 
-        // Upload file for each entry
-        await axios.post(
-          `http://localhost:8000/api/records/${upin}/upload/`,
-          form,
+        await axios.put(
+          `http://localhost:5000/api/records/${upin}/files`,
+          formData,
           {
             headers: { "Content-Type": "multipart/form-data" },
           }
         );
-
-        // Collect uploaded files for parent
-        uploadedFileList.push(entry.file);
       }
+      // Save all files to sessionStorage for AddFile.js
+      const allFiles = [...requiredFiles.filter((f) => !!f.file), ...files];
+      sessionStorage.setItem("allUploadedFiles", JSON.stringify(allFiles));
 
-      setFiles([]); // Clear after success
-      onUploadComplete(uploadedFileList); // Notify parent of uploaded files
-      onRefresh(); // Inform parent to refresh records
+      navigate("/add-file?upin=" + upin);
     } catch (err) {
       console.error("Upload error:", err);
-      alert("Failed to upload files. Please try again.");
-    } finally {
-      setIsUploading(false);
     }
   };
 
-  return (
-    <div className="w-full text-sm">
-      <h2 className="text-lg font-semibold mb-3">
-        Upload Files for UPIN: {upin}
-      </h2>
+  const handleSaveAndExit = () => {
+    sessionStorage.setItem("requiredFiles", JSON.stringify(requiredFiles));
+    sessionStorage.setItem("tempFiles", JSON.stringify(files));
+    navigate(-1);
+  };
 
-      {/* Step 1: Enter Name */}
-      {step === 1 && (
-        <div className="mb-4 space-y-2">
-          <label className="block text-gray-700">File Display Name</label>
-          <input
-            type="text"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            className="w-full border rounded px-2 py-1"
-            placeholder="Enter a name"
-          />
-          <button
-            onClick={handleNext}
-            className="mt-2 px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded"
-          >
-            Next: Select File
-          </button>
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (files.length > 0 || requiredFiles.some((f) => f.file)) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [files, requiredFiles]);
+
+  useEffect(() => {
+    const handleReset = () => {
+      setFiles([]);
+      setRequiredFiles(
+        REQUIRED_FILES.map((name) => ({
+          name,
+          file: null,
+          url: null,
+          type: "",
+          date: "",
+          originalName: "",
+        }))
+      );
+      sessionStorage.removeItem("tempFiles");
+      sessionStorage.removeItem("requiredFiles");
+      sessionStorage.removeItem("allUploadedFiles");
+    };
+    window.addEventListener("fileUploader:reset", handleReset);
+    return () => window.removeEventListener("fileUploader:reset", handleReset);
+  }, []);
+
+  return (
+    <div className="uploader-container">
+      <h1>{upin ? `Upload Files for UPIN: ${upin}` : "Upload Files"}</h1>
+
+      <h3>Required Files</h3>
+      <ul style={{ listStyle: "none", padding: 0 }}>
+        {requiredFiles.map((f, idx) => (
+          <li key={f.name} style={{ marginBottom: "1rem" }}>
+            <label style={{ fontWeight: "bold" }}>{f.name}</label>
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+              <input
+                type="file"
+                onChange={(e) => handleRequiredFileChange(idx, e)}
+                disabled={!!f.file}
+                style={{ marginRight: "1rem" }}
+              />
+              {f.file && (
+                <>
+                  <span style={{ color: "#4BB543" }}>
+                    {f.originalName} (uploaded)
+                  </span>
+                  <button
+                    className="btn btn-red btn-xs"
+                    onClick={() => handleRemoveRequiredFile(idx)}
+                    type="button"
+                  >
+                    Remove
+                  </button>
+                </>
+              )}
+              {!f.file && <span style={{ color: "#cc0000" }}>Required</span>}
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <hr />
+
+      <h3>Additional Files</h3>
+      {!allRequiredUploaded && (
+        <div style={{ color: "#cc0000", marginBottom: "1rem" }}>
+          Please upload all required files before adding additional files.
         </div>
       )}
 
-      {/* Step 2: Choose File */}
-      {step === 2 && (
-        <div className="mb-4 space-y-2">
-          <input type="file" onChange={handleFileSelect} />
-          <div className="flex gap-2">
-            <button
-              onClick={handleAddFile}
-              className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded disabled:opacity-50"
-              disabled={!newFile}
-            >
-              Add to List
-            </button>
-            <button
-              onClick={() => setStep(1)}
-              className="px-3 py-1 bg-gray-400 hover:bg-gray-500 text-white rounded"
-            >
-              Back
+      {/* Additional file upload UI */}
+      <div
+        style={{
+          opacity: allRequiredUploaded ? 1 : 0.5,
+          pointerEvents: allRequiredUploaded ? "auto" : "none",
+        }}
+      >
+        {step === 1 && (
+          <div>
+            <label>
+              <span>File Display Name</span>
+              <input
+                type="text"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleNext()}
+                className="input-field"
+                placeholder="Enter a name"
+              />
+            </label>
+            <button onClick={handleNext} className="btn btn-green">
+              Next: Select File
             </button>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* File List */}
-      <div className="max-h-60 overflow-y-auto mb-4">
-        <table className="w-full border text-xs">
-          <thead className="bg-gray-100">
+        {step === 2 && (
+          <div>
+            <input type="file" onChange={handleFileSelect} />
+            <div style={{ marginTop: "1rem" }}>
+              <button
+                onClick={handleAddFile}
+                className="btn btn-blue"
+                disabled={!newFile}
+              >
+                Add to List
+              </button>
+              <button onClick={() => setStep(1)} className="btn btn-gray">
+                Back
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="table-wrapper">
+        <table className="table">
+          <thead>
             <tr>
-              <th className="p-2 text-left">Name</th>
-              <th className="p-2 text-left">Date</th>
-              <th className="p-2 text-left">Type</th>
-              <th className="p-2 text-center">Actions</th>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
+            {/* Required files */}
+            {requiredFiles.map((f, idx) => (
+              <tr key={`required-${f.name}`}>
+                <td>{f.name}</td>
+                <td>
+                  <span style={{ color: "#4BB543", fontWeight: "bold" }}>
+                    Required
+                  </span>
+                </td>
+                <td className="text-sm">{f.date}</td>
+                <td className="text-sm">{f.type}</td>
+                <td>
+                  {f.file ? (
+                    <>
+                      <a
+                        href={f.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-outline ml-2"
+                      >
+                        View
+                      </a>
+                      <button
+                        className="btn btn-red btn-xs"
+                        onClick={() => handleRemoveRequiredFile(idx)}
+                        type="button"
+                      >
+                        Remove
+                      </button>
+                    </>
+                  ) : (
+                    <span style={{ color: "#cc0000" }}>Required</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+            {/* Additional files */}
             {files.map((f, idx) => (
-              <tr key={idx} className="border-t hover:bg-gray-50">
-                <td className="p-2">
+              <tr key={`additional-${idx}`}>
+                <td>
                   {editingIndex === idx ? (
                     <input
                       type="text"
                       value={editName}
                       onChange={(e) => setEditName(e.target.value)}
-                      className="border rounded px-1 py-0.5 w-full"
+                      className="input-field"
                     />
                   ) : (
                     f.name
                   )}
                 </td>
-                <td className="p-2 text-gray-600">{f.date}</td>
-                <td className="p-2 text-gray-600">
+                <td>
+                  <span style={{ color: "#007bff" }}>Additional</span>
+                </td>
+                <td className="text-sm">{f.date}</td>
+                <td className="text-sm">
                   {editingIndex === idx ? (
                     <input type="file" onChange={handleEditFileSelect} />
                   ) : (
                     f.type
                   )}
                 </td>
-                <td className="p-2 text-center space-x-1">
+                <td>
                   {editingIndex === idx ? (
                     <>
                       <button
                         onClick={handleSaveEdit}
-                        className="px-2 py-1 bg-green-500 text-white rounded"
+                        className="btn btn-green"
                       >
                         Save
                       </button>
                       <button
                         onClick={() => setEditingIndex(null)}
-                        className="px-2 py-1 bg-gray-400 text-white rounded"
+                        className="btn btn-gray"
                       >
                         Cancel
                       </button>
@@ -219,16 +452,24 @@ export default function FileUploader({ upin, onUploadComplete, onRefresh }) {
                     <>
                       <button
                         onClick={() => startEdit(idx)}
-                        className="px-2 py-1 bg-yellow-500 text-white rounded"
+                        className="btn btn-yellow"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => handleDelete(idx)}
-                        className="px-2 py-1 bg-red-600 text-white rounded"
+                        className="btn btn-red ml-2"
                       >
                         Delete
                       </button>
+                      <a
+                        href={f.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-outline ml-2"
+                      >
+                        View
+                      </a>
                     </>
                   )}
                 </td>
@@ -238,14 +479,13 @@ export default function FileUploader({ upin, onUploadComplete, onRefresh }) {
         </table>
       </div>
 
-      {/* Final Save */}
-      <div className="flex justify-end">
+      <div style={{ textAlign: "right" }}>
         <button
           onClick={handleFinalSave}
-          className="px-4 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded disabled:opacity-50"
-          disabled={!files.length || isUploading}
+          className="btn btn-indigo"
+          disabled={!allRequiredUploaded}
         >
-          {isUploading ? "Uploading..." : "Save All & Close"}
+          {upin ? "Save All Files & Exit" : "Save Temporary Files & Exit"}
         </button>
       </div>
     </div>

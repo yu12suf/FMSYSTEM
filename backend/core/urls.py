@@ -14,6 +14,11 @@ from .views import (
 )
 from .views import upload_files_to_record, upload_files
 
+from rest_framework.routers import DefaultRouter
+from .views import RecordViewSet, upload_record_files
+
+router = DefaultRouter()
+router.register(r'records', RecordViewSet, basename='record')
 
 urlpatterns = [
     path('api/records/', RecordListCreateView.as_view(), name='record-list-create'),       # GET all records / POST new record
@@ -30,6 +35,8 @@ urlpatterns = [
     path("api/statistics/proof-of-possession", ProofOfPossessionStats.as_view()),
     path("api/statistics/service-of-estate", ServiceOfEstateStats.as_view()),
     path('api/records/<str:upin>/upload/', upload_files, name='upload_files'),
+    path('records/<str:upin>/files', upload_record_files),
 
 
 ]
+urlpatterns += router.urls

@@ -36,6 +36,7 @@ class RecordFile(models.Model):
     record = models.ForeignKey(Record, related_name='files', on_delete=models.CASCADE)
     uploaded_file = models.FileField(upload_to='uploads/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
+    display_name = models.CharField(max_length=255, blank=True)  # Add this
+    category = models.CharField(max_length=32, blank=True)       # Add this 
 
-    def __str__(self):
-        return f"File for {self.record.UPIN} uploaded on {self.uploaded_at}"
+      

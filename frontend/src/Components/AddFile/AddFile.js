@@ -1,37 +1,64 @@
 import React, { useState, useEffect, useRef } from "react";
-import "./AddFile.css"; // For styling
-// activate virtual environment, in FMSYSTEM folder: .\env\Scripts\activate
-//how to migrate: 1.python manage.py makemigrations 2. python manage.py migrate
-
+import "./AddFile.css";
 import axios from "axios";
-import FileUploader from "./FileUploader";
-import { Navigate, useNavigate } from "react-router-dom";
-
+import { useNavigate } from "react-router-dom";
 import TaxForm from "./TaxForm";
+import FileUploader from "./FileUploader";
+
+// Utility to get files from sessionStorage (set by FileUploader) onClick={() => navigate("/upload")}
+const getUploadedFiles = () => {
+  const all = sessionStorage.getItem("allUploadedFiles");
+  if (all) return JSON.parse(all);
+  const temp = sessionStorage.getItem("tempFiles");
+  return temp ? JSON.parse(temp) : [];
+};
+
+const REQUIRED_FIELDS = [
+  "UPIN",
+  "PropertyOwnerName",
+  "ServiceOfEstate",
+  "placeLevel",
+  "possessionStatus",
+  "spaceSize",
+  "kebele",
+  "proofOfPossession",
+  "DebtRestriction",
+  "LastTaxPaymtDate",
+  "lastDatePayPropTax",
+  "EndLeasePayPeriod",
+  "FolderNumber",
+  "Row",
+  "ShelfNumber",
+  "NumberOfPages",
+];
+
+const FORM_DATA_KEY = "addFileFormData";
 
 const AddFile = () => {
-  const [currentPage, setCurrentPage] = useState("home");
   const navigate = useNavigate();
+  const formRef = useRef(null);
 
-  const [file, setFile] = useState(null); // To store the selected file
-  const [records, setRecords] = useState([]); // To store fetched records
-  const [editedRow, setEditedRow] = useState(null);
-  const [filePath, setFilePath] = useState(""); // To store the file path for preview/view
-  const [errors, setErrors] = useState({});
+  const [showFileUploader, setShowFileUploader] = useState(false);
 
-  // New ref for the form section
-  const formRef = useRef(null); // Create a ref
-
-  //ne code
+  // State
+  const [uploadedFiles, setUploadedFiles] = useState(getUploadedFiles());
+  const [records, setRecords] = useState([]);
+  const [formErrors, setFormErrors] = useState({});
   const [searchResults, setSearchResults] = useState([]);
   const [currentSearchIndex, setCurrentSearchIndex] = useState(-1);
   const [searchQuery, setSearchQuery] = useState("");
-
-  const [navigationContext, setNavigationContext] = useState("search"); // "search" or "edit"
-  const [editIndex, setEditIndex] = useState(null); // for index in general records when editing
-
-  const [uploadedFiles, setUploadedFiles] = useState([]); // Store uploaded files
-  const [showFileUploader, setShowFileUploader] = useState(false);
+  const [navigationContext, setNavigationContext] = useState("search");
+  const [editIndex, setEditIndex] = useState(null);
+  const [editMode, setEditMode] = useState(false);
+  const [editUpin, setEditUpin] = useState(null);
+  const [toast, setToast] = useState({
+    show: false,
+    message: "",
+    type: "success",
+  });
+  const [upinCheckLoading, setUpinCheckLoading] = useState(false);
+  const [upinExists, setUpinExists] = useState(false);
+  const upinCheckTimeout = useRef(null);
 
   useEffect(() => {
     if (navigationContext === "edit" && editIndex !== null) {
@@ -47,47 +74,58 @@ const AddFile = () => {
     }
   }, [currentSearchIndex]);
 
-  // State for form inputs
-  const [formData, setFormData] = useState({
-    PropertyOwnerName: "",
-    ExistingArchiveCode: "",
-    UPIN: "",
-    ServiceOfEstate: "",
-    placeLevel: "",
-    possessionStatus: "",
-    spaceSize: "",
-    kebele: "",
-    proofOfPossession: "",
-    DebtRestriction: "",
-    LastTaxPaymtDate: "",
-    unpaidTaxDebt: "",
-    InvoiceNumber: "",
-    lastDatePayPropTax: "",
-    unpaidPropTaxDebt: "",
-    InvoiceNumber2: "",
-    uploadedFile: null,
-    filePath: "",
-    EndLeasePayPeriod: "",
-    unpaidLeaseDebt: "",
-    InvoiceNumber3: "",
-    FolderNumber: "",
-    Row: "",
-    ShelfNumber: "",
-    NumberOfPages: 0,
+  const [formData, setFormData] = useState(() => {
+    const saved = sessionStorage.getItem(FORM_DATA_KEY);
+    return saved
+      ? JSON.parse(saved)
+      : {
+          PropertyOwnerName: "",
+          ExistingArchiveCode: "",
+          UPIN: "",
+          ServiceOfEstate: "",
+          placeLevel: "",
+          possessionStatus: "",
+          spaceSize: "",
+          kebele: "",
+          proofOfPossession: "",
+          DebtRestriction: "",
+          LastTaxPaymtDate: "",
+          unpaidTaxDebt: "",
+          InvoiceNumber: "",
+          lastDatePayPropTax: "",
+          unpaidPropTaxDebt: "",
+          InvoiceNumber2: "",
+          EndLeasePayPeriod: "",
+          unpaidLeaseDebt: "",
+          InvoiceNumber3: "",
+          FolderNumber: "",
+          Row: "",
+          ShelfNumber: "",
+          NumberOfPages: 0,
+        };
   });
 
-  const [editMode, setEditMode] = useState(false);
-  const [editUpin, setEditUpin] = useState(null);
+  // Save formData to sessionStorage on change
+  useEffect(() => {
+    sessionStorage.setItem(FORM_DATA_KEY, JSON.stringify(formData));
+  }, [formData]);
 
-  // Fetch records from the API when the component mounts
+  // Sync uploadedFiles with sessionStorage (for FileUploader integration)
+  useEffect(() => {
+    const syncFiles = () => setUploadedFiles(getUploadedFiles());
+    window.addEventListener("storage", syncFiles);
+    return () => window.removeEventListener("storage", syncFiles);
+  }, []);
 
+  // Fetch records from backend
   const fetchRecords = async () => {
     try {
       const response = await fetch("http://localhost:8000/api/records");
       const data = await response.json();
-      setRecords(data);
+      setRecords(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error("Error fetching records:", error);
+      setRecords([]); // fallback to empty array on error
+      showToast("Failed to fetch records. Please try again.", "error");
     }
   };
 
@@ -95,99 +133,222 @@ const AddFile = () => {
     fetchRecords();
   }, []);
 
-  const handleFileChange = (event) => {
-    const selectedFile = event.target.files[0];
-    if (selectedFile) {
-      setFile(selectedFile); // Optional, if you're using it elsewhere
-      setFilePath(URL.createObjectURL(selectedFile)); // For client-side preview/view
-      setFormData((prevData) => ({
-        ...prevData,
-        uploadedFile: selectedFile, // Store the actual File object for upload
-      }));
+  // Populate form when navigating records
+  useEffect(() => {
+    if (
+      navigationContext === "edit" &&
+      editIndex !== null &&
+      records[editIndex]
+    ) {
+      populateFormWithRecord(records[editIndex]);
     }
+    // eslint-disable-next-line
+  }, [editIndex]);
+
+  useEffect(() => {
+    if (
+      navigationContext === "search" &&
+      currentSearchIndex >= 0 &&
+      searchResults[currentSearchIndex]
+    ) {
+      populateFormWithRecord(searchResults[currentSearchIndex]);
+    }
+    // eslint-disable-next-line
+  }, [currentSearchIndex]);
+
+  // Toast handler
+  const showToast = (message, type = "success") => {
+    setToast({ show: true, message, type });
+    setTimeout(
+      () => setToast({ show: false, message: "", type: "success" }),
+      2500
+    );
   };
 
-  const [formErrors, setFormErrors] = useState({});
+  // Validation helpers
+  const validateRequiredFields = () => {
+    let errors = {};
+    for (const field of REQUIRED_FIELDS) {
+      if (
+        formData[field] === undefined ||
+        formData[field] === null ||
+        formData[field].toString().trim() === ""
+      ) {
+        errors[field] = "This field is required.";
+      }
+    }
+    setFormErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      showToast(
+        "All required fields must be completed before submitting the form.",
+        "error"
+      );
+      return false;
+    }
+    return true;
+  };
 
+  const validateFileUpload = () => {
+    if (!uploadedFiles || uploadedFiles.length === 0) {
+      showToast(
+        "At least one file must be uploaded before you can submit.",
+        "error"
+      );
+      return false;
+    }
+    return true;
+  };
+
+  const isDuplicateUPIN = () => {
+    if (!Array.isArray(records)) return false;
+    return records.some(
+      (record) => record.UPIN && record.UPIN.trim() === formData.UPIN.trim()
+    );
+  };
+
+  // Form field change handler
   const handleChange = (event) => {
     const { name, value } = event.target;
 
-    if (name === "PropertyOwnerName") {
-      const characterOnlyRegex = /^[A-Za-z\u1200-\u135A\s]*$/;
-
-      if (!characterOnlyRegex.test(value)) {
-        /*alert("እባክዎን ስሙን በቁምፊ ብቻ ያስገቡ።");
-        return;*/
-        setFormErrors((prevErrors) => ({
-          ...prevErrors,
-          PropertyOwnerName: "Enter only characters please!",
-        }));
-        return;
-      } else {
-        setFormErrors((prevErrors) => ({
-          ...prevErrors,
-          PropertyOwnerName: "",
-        }));
-      }
+    // Required field validation (real-time)
+    if (REQUIRED_FIELDS.includes(name)) {
+      setFormErrors((prev) => ({
+        ...prev,
+        [name]: value.trim() === "" ? "This field is required." : "",
+      }));
     }
 
-    setFormData((prevData) => ({
-      ...prevData,
+    // Inline validation for PropertyOwnerName
+    if (name === "PropertyOwnerName") {
+      const characterOnlyRegex = /^[A-Za-z\u1200-\u135A\s]*$/;
+      setFormErrors((prev) => ({
+        ...prev,
+        PropertyOwnerName: characterOnlyRegex.test(value)
+          ? ""
+          : "Please enter only valid Amharic or English characters.",
+      }));
+    }
+
+    // Real-time UPIN duplicate check (debounced)
+    if (name === "UPIN") {
+      setFormErrors((prev) => ({
+        ...prev,
+        UPIN: value.trim() === "" ? "This field is required." : "",
+      }));
+      setUpinExists(false);
+      if (upinCheckTimeout.current) clearTimeout(upinCheckTimeout.current);
+      upinCheckTimeout.current = setTimeout(() => {
+        checkUPINExists(value);
+      }, 400); // 400ms debounce
+    }
+
+    setFormData((prev) => ({
+      ...prev,
       [name]: name === "NumberOfPages" ? Number(value) : value,
     }));
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    const updatedData = {
-      ...formData,
-      unpaidTaxDebt: calculateUnpaidDebt(formData.LastTaxPaymtDate),
-      unpaidPropTaxDebt: calculateUnpaidDebt(formData.lastDatePayPropTax),
-      unpaidLeaseDebt: calculateUnpaidDebt(formData.EndLeasePayPeriod),
-    };
-
-    const formDataToSend = new FormData();
-    for (const key in updatedData) {
-      const value = updatedData[key];
-
-      // Skip appending if value is an empty string for nullable fields
-      if (
-        value === "" &&
-        [
-          "LastTaxPaymtDate",
-          "lastDatePayPropTax",
-          "EndLeasePayPeriod",
-        ].includes(key)
-      ) {
-        continue;
-      }
-
-      formDataToSend.append(key, value);
-    }
-
-    // Append uploaded files to FormData
-    uploadedFiles.forEach((file) => {
-      formDataToSend.append("uploadedFiles", file); // Assuming the backend accepts multiple files
-    });
-
-    try {
-      const response = await fetch("http://localhost:8000/api/records/", {
-        method: "POST",
-        body: formDataToSend,
-      });
-
-      if (response.ok) {
-        await fetchRecords(); // Re-fetch all records from server
-        resetForm();
-      } else {
-        console.error("Error:", response.statusText); // Log the error status
-      }
-    } catch (error) {
-      console.error("Error saving record:", error);
+  // Name field blur validation
+  const handleBlurName = (event) => {
+    const { name, value } = event.target;
+    if (name === "PropertyOwnerName") {
+      const characterOnlyRegex = /^[A-Za-z\u1200-\u135A\s]*$/;
+      setFormErrors((prevErrors) => ({
+        ...prevErrors,
+        PropertyOwnerName: !characterOnlyRegex.test(value)
+          ? "Please enter only valid Amharic or English characters."
+          : "",
+      }));
     }
   };
 
+  // Year/debt validation
+  const calculateUnpaidDebt = (year) => {
+    const parsed = parseInt(year, 10);
+    const ethiopianYear = new Date().getFullYear() - 8;
+    if (!isNaN(parsed) && parsed >= 1950 && parsed <= ethiopianYear) {
+      return ethiopianYear - parsed;
+    }
+    return null;
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    const parsed = parseInt(value, 10);
+    const ethiopianYear = new Date().getFullYear() - 8;
+
+    if (!value || isNaN(parsed) || parsed < 1950 || parsed > ethiopianYear) {
+      showToast(
+        `Please enter a year between 1950 and ${ethiopianYear}.`,
+        "error"
+      );
+      setFormData((prev) => {
+        const updated = { ...prev, [name]: "" };
+        if (name === "LastTaxPaymtDate") updated.unpaidTaxDebt = "";
+        else if (name === "lastDatePayPropTax") updated.unpaidPropTaxDebt = "";
+        else if (name === "EndLeasePayPeriod") updated.unpaidLeaseDebt = "";
+        return updated;
+      });
+      return;
+    }
+
+    const unpaid = calculateUnpaidDebt(value);
+    setFormData((prev) => {
+      const updates = { [name]: value };
+      if (name === "LastTaxPaymtDate") updates.unpaidTaxDebt = unpaid;
+      else if (name === "lastDatePayPropTax")
+        updates.unpaidPropTaxDebt = unpaid;
+      else if (name === "EndLeasePayPeriod") updates.unpaidLeaseDebt = unpaid;
+      return { ...prev, ...updates };
+    });
+  };
+
+  // Populate form with a record
+  const populateFormWithRecord = (record) => {
+    if (!record) return;
+    setFormData(record);
+    setEditMode(true);
+    setEditUpin(record.UPIN);
+  };
+
+  // Navigation handlers
+  const handlePrev = () => {
+    if (navigationContext === "search" && currentSearchIndex > 0) {
+      setCurrentSearchIndex(currentSearchIndex - 1);
+    } else if (navigationContext === "edit" && editIndex > 0) {
+      setEditIndex(editIndex - 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (
+      navigationContext === "search" &&
+      currentSearchIndex < searchResults.length - 1
+    ) {
+      setCurrentSearchIndex(currentSearchIndex + 1);
+    } else if (navigationContext === "edit" && editIndex < records.length - 1) {
+      setEditIndex(editIndex + 1);
+    }
+  };
+
+  // Search handler
+  const handleSearch = () => {
+    const results = records.filter((row) =>
+      row.UPIN.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    if (results.length > 0) {
+      setSearchResults(results);
+      setCurrentSearchIndex(0);
+      setNavigationContext("search");
+    } else {
+      setSearchResults([]);
+      setCurrentSearchIndex(-1);
+      showToast("No records found for the provided UPIN.", "error");
+    }
+    setSearchQuery("");
+  };
+
+  // Reset form
   const resetForm = () => {
     setFormData({
       PropertyOwnerName: "",
@@ -206,279 +367,227 @@ const AddFile = () => {
       lastDatePayPropTax: "",
       unpaidPropTaxDebt: "",
       InvoiceNumber2: "",
-      uploadedFile: null,
-      filePath: "",
       EndLeasePayPeriod: "",
       unpaidLeaseDebt: "",
       InvoiceNumber3: "",
       FolderNumber: "",
       Row: "",
       ShelfNumber: "",
-      NumberOfPages: 0,
+      NumberOfPages: "",
     });
-    setUploadedFiles([]); // Reset uploaded files
-    setShowFileUploader(false); // Close uploader
+    setUploadedFiles([]);
+    setFormErrors({});
+    setEditMode(false);
+    setEditUpin(null);
+    setEditIndex(null);
+    setCurrentSearchIndex(-1);
+    setSearchResults([]);
+    sessionStorage.removeItem(FORM_DATA_KEY);
+    // Remove all file-related sessionStorage
+    sessionStorage.removeItem("tempFiles");
+    sessionStorage.removeItem("requiredFiles");
+    sessionStorage.removeItem("allUploadedFiles");
+    // Notify FileUploader.js to reset its state (optional, for live reset)
+    window.dispatchEvent(new Event("fileUploader:reset"));
   };
 
-  // hanlde save
+  // --- Main form submission handler ---
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
-  const handleSaveClick = async () => {
-    const updatedFile = file || formData.uploadedFile || null;
+    // Check for any errors in formErrors
+    if (Object.values(formErrors).some((msg) => msg) || upinExists) {
+      showToast(
+        upinExists
+          ? "A record with this UPIN already exists. Please use a unique UPIN."
+          : "Please fill in all required fields.",
+        "error"
+      );
+      return;
+    }
 
-    // Recalculate debts before sending
+    // Validation
+    if (!validateRequiredFields()) return;
+    if (!validateFileUpload()) return;
+    if (upinExists) {
+      showToast(
+        "A record with this UPIN already exists. Please use a unique UPIN.",
+        "error"
+      );
+      return;
+    }
+
     const updatedData = {
       ...formData,
       unpaidTaxDebt: calculateUnpaidDebt(formData.LastTaxPaymtDate),
       unpaidPropTaxDebt: calculateUnpaidDebt(formData.lastDatePayPropTax),
       unpaidLeaseDebt: calculateUnpaidDebt(formData.EndLeasePayPeriod),
-      uploadedFile: updatedFile,
+    };
+
+    const formDataToSend = new FormData();
+    Object.entries(updatedData).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) {
+        formDataToSend.append(key, value);
+      }
+    });
+
+    try {
+      const response = await fetch("http://localhost:8000/api/records/", {
+        method: "POST",
+        body: formDataToSend,
+      });
+
+      if (response.ok) {
+        const newRecord = await response.json();
+        const upin = newRecord.UPIN;
+
+        // Upload files
+        if (uploadedFiles.length > 0) {
+          const fileFormData = new FormData();
+          uploadedFiles.forEach((fileObj, idx) => {
+            fileFormData.append("files", fileObj.file);
+            fileFormData.append(`names[${idx}]`, fileObj.name);
+          });
+
+          await axios.put(
+            `http://localhost:8000/api/records/${upin}/files`,
+            fileFormData,
+            { headers: { "Content-Type": "multipart/form-data" } }
+          );
+        }
+
+        sessionStorage.removeItem("tempFiles");
+        setUploadedFiles([]);
+        await fetchRecords();
+        resetForm();
+        showToast("Record added successfully!", "success");
+      } else {
+        showToast("Failed to add record. Please try again.", "error");
+      }
+    } catch (error) {
+      showToast("An error occurred while saving the record.", "error");
+      console.error("Error saving record:", error);
+    }
+  };
+
+  // Save (edit) handler
+  const handleSaveClick = async () => {
+    const updatedData = {
+      ...formData,
+      unpaidTaxDebt: calculateUnpaidDebt(formData.LastTaxPaymtDate),
+      unpaidPropTaxDebt: calculateUnpaidDebt(formData.lastDatePayPropTax),
+      unpaidLeaseDebt: calculateUnpaidDebt(formData.EndLeasePayPeriod),
     };
 
     try {
       const formDataToSend = new FormData();
-
-      for (const key in updatedData) {
-        if (key === "uploadedFile") {
-          if (updatedData.uploadedFile instanceof File) {
-            formDataToSend.append("uploadedFile", updatedData.uploadedFile);
-          }
-        } else {
-          formDataToSend.append(key, updatedData[key]);
-        }
-      }
+      Object.entries(updatedData).forEach(([key, value]) => {
+        formDataToSend.append(key, value);
+      });
 
       const response = await axios.put(
-        `http://localhost:8000/api/records/${editUpin}/`,
+        `http://localhost:8000/api/records/${editUpin}`,
         formDataToSend,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
 
       if (response.status === 200) {
-        await fetchRecords(); // Re-fetch records to refresh the table
+        await fetchRecords();
         resetForm();
-        setFile(null); // <<< IMPORTANT
         setEditMode(false);
         setEditUpin(null);
         setSearchResults([]);
         setCurrentSearchIndex(0);
+        showToast("Record updated successfully!", "success");
+      } else {
+        showToast("Failed to update record. Please try again.", "error");
       }
     } catch (error) {
+      showToast("An error occurred while updating the record.", "error");
       console.error("Error updating record:", error);
     }
   };
 
-  const handleSearch = () => {
-    const results = records.filter((row) =>
-      row.UPIN.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    if (results.length > 0) {
-      setSearchResults(results);
-      setCurrentSearchIndex(0); // Set to 0 immediately after search
-      populateFormWithRecord(results[0]);
-      setEditUpin(results[0].UPIN); // ✅ ADD THIS
-      setEditMode(true); // ✅ Optional: ensure edit mode is on
-      setNavigationContext("search");
-    } else {
-      setSearchResults([]);
-      setCurrentSearchIndex(null); // Or set to null if no results
-      alert("No records found.");
-    }
-
-    setSearchQuery("");
-  };
-
-  const populateFormWithRecord = (record) => {
-    if (!record) return;
-
-    setFormData(record);
-    setEditMode(true);
-    setEditUpin(record.UPIN); //  Add this line
-  };
-
-  const handlePrev = () => {
-    if (navigationContext === "search") {
-      if (currentSearchIndex > 0) {
-        const newIndex = currentSearchIndex - 1;
-        setCurrentSearchIndex(newIndex);
-        populateFormWithRecord(searchResults[newIndex]);
-      }
-    } else if (navigationContext === "edit") {
-      if (editIndex > 0) {
-        const newIndex = editIndex - 1;
-        setEditIndex(newIndex);
-        populateFormWithRecord(records[newIndex]);
-      }
-    }
-  };
-
-  const handleNext = () => {
-    if (navigationContext === "search" && currentSearchIndex != null) {
-      if (currentSearchIndex < searchResults.length - 1) {
-        const newIndex = currentSearchIndex + 1;
-        setCurrentSearchIndex(newIndex);
-        populateFormWithRecord(searchResults[newIndex]);
-      }
-    } else if (navigationContext === "edit") {
-      if (editIndex < records.length - 1) {
-        const newIndex = editIndex + 1;
-        setEditIndex(newIndex);
-        populateFormWithRecord(records[newIndex]);
-      }
-    }
-  };
-  const filteredRecords = records.filter(
-    (record) => record.UPIN && record.UPIN.trim() !== ""
-  );
-
-  // name handling
-
-  const handleBlurName = (event) => {
-    const { name, value } = event.target;
-
-    if (name === "PropertyOwnerName") {
-      const characterOnlyRegex = /^[A-Za-z\u1200-\u135A\s]*$/;
-
-      if (!characterOnlyRegex.test(value)) {
-        setFormErrors((prevErrors) => ({
-          ...prevErrors,
-          PropertyOwnerName: "Enter only characters please!",
-        }));
-      } else {
-        setFormErrors((prevErrors) => ({
-          ...prevErrors,
-          PropertyOwnerName: "",
-        }));
-      }
-    }
-  };
-
-  const calculateUnpaidDebt = (year) => {
-    const parsed = parseInt(year, 10);
-    const ethiopianYear = new Date().getFullYear() - 8;
-
-    if (!isNaN(parsed) && parsed >= 1950 && parsed <= ethiopianYear) {
-      return ethiopianYear - parsed;
-    }
-
-    return null;
-  };
-
-  // function for unpaid debt
-  const handleBlur = (e) => {
-    const { name, value } = e.target;
-    const parsed = parseInt(value, 10);
-    const ethiopianYear = new Date().getFullYear() - 8;
-
-    if (!value || isNaN(parsed) || parsed < 1950 || parsed > ethiopianYear) {
-      alert(`Please insert a value between 1950 and ${ethiopianYear}`);
-
-      // Clear the value and its related debt
-      setFormData((prev) => {
-        const updated = { ...prev, [name]: "" };
-
-        if (name === "LastTaxPaymtDate") {
-          updated.unpaidTaxDebt = "";
-        } else if (name === "lastDatePayPropTax") {
-          updated.unpaidPropTaxDebt = "";
-        } else if (name === "EndLeasePayPeriod") {
-          updated.unpaidLeaseDebt = "";
-        }
-
-        return updated;
-      });
-
-      return; // stop here
-    }
-
-    const unpaid = calculateUnpaidDebt(value);
-
-    setFormData((prev) => {
-      const updates = { [name]: value };
-
-      if (name === "LastTaxPaymtDate") {
-        updates.unpaidTaxDebt = unpaid;
-      } else if (name === "lastDatePayPropTax") {
-        updates.unpaidPropTaxDebt = unpaid;
-      } else if (name === "EndLeasePayPeriod") {
-        updates.unpaidLeaseDebt = unpaid;
-      }
-
-      return { ...prev, ...updates };
-    });
-  };
-
-  // Called after files have been uploaded successfully
-  const handleUploadComplete = (uploadedFiles) => {
-    alert(`${uploadedFiles.length} files uploaded successfully.`);
-    setShowFileUploader(false);
-    // Optionally reset form or navigate elsewhere
-  };
-
-  // Called after files upload to refresh any record lists or state if needed
-  const refreshRecords = () => {
-    // For example, fetch latest records or update UI
-    console.log("Refresh records triggered");
-  };
-
-  const handleSaveRecordFirst = async () => {
-    if (!formData.SomeOtherRequiredField || !formData.AnotherRequiredField) {
-      alert("Missing required fields. Please complete the form.");
+  // --- Real-time UPIN duplicate check ---
+  const checkUPINExists = async (upin) => {
+    if (!upin || upin.trim() === "") {
+      setUpinExists(false);
       return;
     }
-
+    setUpinCheckLoading(true);
     try {
-      const response = await axios.post(
-        "http://localhost:8000/api/records/",
-        formData
+      const response = await fetch(
+        `http://localhost:8000/api/records/?upin=${encodeURIComponent(
+          upin.trim()
+        )}`
       );
-      if (response.status === 201) {
-        console.log("Record saved successfully:", response.data);
-        setFormData((prevData) => ({
-          ...prevData,
-          UPIN: response.data.UPIN, // Ensure UPIN is updated
-        }));
+      if (response.ok) {
+        const data = await response.json();
+        // Adjust this logic if your API returns a single object or an array
+        setUpinExists(
+          Array.isArray(data)
+            ? data.some((r) => r.UPIN === upin.trim())
+            : !!data.UPIN
+        );
+      } else {
+        setUpinExists(false);
       }
-    } catch (error) {
-      console.error("Failed to save record first:", error);
-      alert("There was a problem saving your record. Please try again.");
+    } catch {
+      setUpinExists(false);
+    } finally {
+      setUpinCheckLoading(false);
     }
   };
 
   if (showFileUploader) {
-    return (
-      <FileUploader
-        upin={formData.UPIN}
-        onUploadComplete={handleUploadComplete}
-        onRefresh={refreshRecords}
-      />
-    );
+    return <FileUploader />;
   }
 
+  // --- Render ---
   return (
     <div ref={formRef}>
-      <div className="search-bar">
-        <button className="search-button" onClick={handleSearch}>
-          Search
-        </button>
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search by UPIN"
-        />
-      </div>
-      <form className="form" onSubmit={handleSubmit}>
+      {/* Toast Notification */}
+      {toast.show && (
+        <div
+          style={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            background: toast.type === "success" ? "#4BB543" : "#cc0000",
+            color: "#fff",
+            padding: "12px 24px",
+            borderRadius: "6px",
+            zIndex: 9999,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+            fontWeight: "bold",
+          }}
+        >
+          {toast.message}
+        </div>
+      )}
+      <form
+        className="form"
+        onSubmit={handleSubmit}
+        onKeyDown={(e) => {
+          // Prevent Enter from submitting unless on a textarea or submit button
+          if (
+            e.key === "Enter" &&
+            e.target.tagName !== "TEXTAREA" &&
+            e.target.type !== "submit"
+          ) {
+            e.preventDefault();
+          }
+        }}
+      >
         <div className="form-column-1">
           <div className="form-group" style={{ position: "relative" }}>
             <label>ይዞታው ባለቤት ስም</label>
-
             <input
               type="text"
               name="PropertyOwnerName"
               value={formData.PropertyOwnerName}
               onChange={handleChange}
-              onBlur={handleBlurName} // alert triggers on blur
+              onBlur={handleBlurName}
             />
             {formErrors.PropertyOwnerName && (
               <div
@@ -511,7 +620,7 @@ const AddFile = () => {
               onChange={handleChange}
             />
           </div>
-          <div className="form-group">
+          <div className="form-group" style={{ position: "relative" }}>
             <label>UPIN</label>
             <input
               type="text"
@@ -519,7 +628,58 @@ const AddFile = () => {
               value={formData.UPIN}
               onChange={handleChange}
               disabled={editMode}
+              autoComplete="off"
             />
+            {upinCheckLoading && (
+              <div
+                style={{ color: "#888", fontSize: "0.85em", marginTop: "2px" }}
+              >
+                Checking UPIN...
+              </div>
+            )}
+            {formErrors.UPIN && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "100%",
+                  left: 0,
+                  backgroundColor: "#fff4f4",
+                  color: "#cc0000",
+                  padding: "4px 8px",
+                  fontSize: "0.85em",
+                  border: "1px solid #cc0000",
+                  borderRadius: "4px",
+                  marginTop: "4px",
+                  whiteSpace: "nowrap",
+                  boxShadow: "0px 2px 6px rgba(0,0,0,0.1)",
+                  zIndex: 100,
+                }}
+              >
+                {formErrors.UPIN}
+              </div>
+            )}
+            {upinExists && !formErrors.UPIN && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "100%",
+                  left: 0,
+                  backgroundColor: "#fff4f4",
+                  color: "#cc0000",
+                  padding: "4px 8px",
+                  fontSize: "0.85em",
+                  border: "1px solid #cc0000",
+                  borderRadius: "4px",
+                  marginTop: "4px",
+                  whiteSpace: "nowrap",
+                  boxShadow: "0px 2px 6px rgba(0,0,0,0.1)",
+                  zIndex: 100,
+                }}
+              >
+                A record with this UPIN already exists. Please use a unique
+                UPIN.
+              </div>
+            )}
           </div>
           <div className="form-group">
             <label>የይዞታው አገልግሎት</label>
@@ -665,14 +825,14 @@ const AddFile = () => {
             />
           </div>
           <div className="form-group tax-pay">
-            <label className="year-label">
+            <label className="year-label" style={{ marginRight: "10px" }}>
               የንብረት ግብር የመጨረሻ የተከፈለበት ዘመን
               <input
                 type="text"
                 name="lastDatePayPropTax"
                 value={formData.lastDatePayPropTax}
                 onChange={handleChange}
-                onBlur={handleBlur} // 👈 alert triggers on blur
+                onBlur={handleBlur} //  alert triggers on blur
                 min="1950"
                 max={new Date().getFullYear() - 8}
                 placeholder="e.g., 2015"
@@ -691,36 +851,15 @@ const AddFile = () => {
             />
           </div>
 
-          <div className="button-container">
+          <div className="button-container upload-file-container">
             <button
-              onClick={async () => {
-                // ✅ First: Validate required fields
-                if (
-                  !formData.SomeOtherRequiredField ||
-                  !formData.AnotherRequiredField
-                ) {
-                  alert(
-                    "Please fill in all required fields before uploading files."
-                  );
-                  return;
-                }
-
-                // ✅ Then: Save the record
-                await handleSaveRecordFirst();
-
-                // ✅ Check UPIN again after saving
-                if (!formData.UPIN) {
-                  alert(
-                    "Failed to generate UPIN. Please try saving the record again."
-                  );
-                  return;
-                }
-
-                // ✅ Show the file uploader if all checks pass
-                setShowFileUploader(true);
-              }}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
+              type="button"
+              className="upload-file-btn"
+              onClick={() => setShowFileUploader(true)}
             >
+              <span className="upload-icon" role="img" aria-label="upload">
+                ⬆️
+              </span>
               Upload Files
             </button>
           </div>
@@ -785,24 +924,13 @@ const AddFile = () => {
             <input
               type="number"
               name="NumberOfPages"
-              value={formData.NumberOfPages}
+              value={formData.Number}
               onChange={handleChange}
             />
           </div>
         </div>
         <div className="button-container-1">
-          <button
-            type="button"
-            className="submit-button-1"
-            onClick={handlePrev}
-            disabled={
-              (navigationContext === "search" && currentSearchIndex === 0) ||
-              (navigationContext === "edit" &&
-                (editIndex === null || editIndex === 0))
-            }
-          >
-            Previous
-          </button>
+          {/* Remove Previous and Next buttons */}
           {!editMode ? (
             <button type="submit" className="submit-button-1">
               Add Record
@@ -828,21 +956,38 @@ const AddFile = () => {
           <button type="button" className="submit-button-1" onClick={resetForm}>
             Clear
           </button>
-
-          <button
-            type="button"
-            className="submit-button-1"
-            onClick={handleNext}
-            disabled={
-              (navigationContext === "search" &&
-                currentSearchIndex === searchResults.length - 1) ||
-              (navigationContext === "edit" && editIndex === records.length - 1)
-            }
-          >
-            Next
-          </button>
         </div>
       </form>
+      {/* File summary */}
+      <div className="files-uploaded-section">
+        <h4>Files to be uploaded:</h4>
+        <ul className="file-list">
+          {uploadedFiles.map((f, i) => (
+            <li key={i}>
+              <span className="file-icon" role="img" aria-label="file">
+                📄
+              </span>
+              <span className="file-name">{f.name || f.originalName}</span>
+              {f.category && (
+                <span className="file-category">
+                  {f.category.charAt(0).toUpperCase() + f.category.slice(1)}
+                </span>
+              )}
+              {f.url && (
+                <a
+                  href={f.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="file-view-link"
+                  title="View file"
+                >
+                  🔗
+                </a>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 };
