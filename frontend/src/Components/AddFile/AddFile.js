@@ -32,7 +32,6 @@ const REQUIRED_FIELDS = [
   "NumberOfPages",
   "PhoneNumber",
   "NationalId",
-  "TotalBirr",
   "sortingNumber",
 ];
 
@@ -88,7 +87,6 @@ const AddFile = () => {
           UPIN: "",
           PhoneNumber: "",
           NationalId: "",
-          TotalBirr: "",
           ServiceOfEstate: "",
           placeLevel: "",
           possessionStatus: "",
@@ -367,7 +365,6 @@ const AddFile = () => {
       UPIN: "",
       PhoneNumber: "",
       NationalId: "",
-      TotalBirr: "",
       ServiceOfEstate: "",
       placeLevel: "",
       possessionStatus: "",
@@ -1056,35 +1053,36 @@ const AddFile = () => {
             />
           </div>
         </div>
+        <div className="button-container-1">
+          {/* Remove Previous and Next buttons */}
+          {!editMode ? (
+            <button type="submit" className="submit-button-1">
+              Add Record
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="submit-button-1"
+              onClick={() => {
+                handleSaveClick();
+                resetForm();
+                setEditMode(false);
+                setEditUpin(null);
+                if (navigationContext === "edit") {
+                  setSearchResults([]);
+                  setCurrentSearchIndex(0);
+                }
+              }}
+            >
+              Save
+            </button>
+          )}
+          <button type="button" className="submit-button-1" onClick={resetForm}>
+            Clear
+          </button>
+        </div>
       </form>
-      <div className="button-container-1">
-        {/* Remove Previous and Next buttons */}
-        {!editMode ? (
-          <button type="submit" className="submit-button-1">
-            Add Record
-          </button>
-        ) : (
-          <button
-            type="button"
-            className="submit-button-1"
-            onClick={() => {
-              handleSaveClick();
-              resetForm();
-              setEditMode(false);
-              setEditUpin(null);
-              if (navigationContext === "edit") {
-                setSearchResults([]);
-                setCurrentSearchIndex(0);
-              }
-            }}
-          >
-            Save
-          </button>
-        )}
-        <button type="button" className="submit-button-1" onClick={resetForm}>
-          Clear
-        </button>
-      </div>
+
       {/* File summary */}
       <div className="files-uploaded-section">
         <h4>Files to be uploaded:</h4>
