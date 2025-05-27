@@ -83,13 +83,13 @@
   align-items: center; /* Center content inside the button */
   padding: 10px 15px; /* Adjusted padding */
   background-color: blue;
-  background: linear-gradient(to right, #4e54c8, #8f94fb);
+  background: linear-gradient(to right, #4e54c8, #fb8f8ffb); /* Gradient background */
   margin: 0 5px; /* Adjusted margin for spacing */
   width: 300px; /* Fixed width */
   font-weight: 1000;
   font-size: larger;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
 
 }
 .action-button:hover,
