@@ -25,7 +25,6 @@ const ViewFile = () => {
     UPIN: "",
     PhoneNumber: "",
     NationalId: "",
-    TotalBirr: "",
     ServiceOfEstate: "",
     placeLevel: "",
     possessionStatus: "",
@@ -36,14 +35,17 @@ const ViewFile = () => {
     LastTaxPaymtDate: "",
     unpaidTaxDebt: "",
     InvoiceNumber: "",
+    FirstAmount: "",
     lastDatePayPropTax: "",
     unpaidPropTaxDebt: "",
     InvoiceNumber2: "",
+    SecondAmount: "",
     uploadedFile: null,
     filePath: "",
     EndLeasePayPeriod: "",
     unpaidLeaseDebt: "",
     InvoiceNumber3: "",
+    ThirdAmount: "",
     FolderNumber: "",
     Row: "",
     ShelfNumber: "",
@@ -122,7 +124,6 @@ const ViewFile = () => {
       UPIN: "",
       PhoneNumber: "",
       NationalId: "",
-      TotalBirr: "",
       ServiceOfEstate: "",
       placeLevel: "",
       possessionStatus: "",
@@ -133,14 +134,17 @@ const ViewFile = () => {
       LastTaxPaymtDate: "",
       unpaidTaxDebt: "",
       InvoiceNumber: "",
+      FirstAmount: "",
       lastDatePayPropTax: "",
       unpaidPropTaxDebt: "",
       InvoiceNumber2: "",
+      SecondAmount: "",
       uploadedFile: null,
       filePath: "",
       EndLeasePayPeriod: "",
       unpaidLeaseDebt: "",
       InvoiceNumber3: "",
+      ThirdAmount: "",
       FolderNumber: "",
       Row: "",
       ShelfNumber: "",
@@ -367,6 +371,7 @@ const ViewFile = () => {
               value={formData.PropertyOwnerName}
               onChange={handleChange}
               onBlur={handleBlurName}
+              readOnly
             />
             {formErrors.PropertyOwnerName && (
               <div
@@ -397,6 +402,7 @@ const ViewFile = () => {
               name="ExistingArchiveCode"
               value={formData.ExistingArchiveCode}
               onChange={handleChange}
+              readOnly
             />
           </div>
           <div className="form-group-1">
@@ -406,6 +412,7 @@ const ViewFile = () => {
               name="UPIN"
               value={formData.UPIN}
               onChange={handleChange}
+              readOnly
             />
           </div>
 
@@ -416,24 +423,17 @@ const ViewFile = () => {
               name="PhoneNumber"
               value={formData.PhoneNumber}
               onChange={handleChange}
+              readOnly
             />
           </div>
           <div className="form-group-1">
-            <label>FAN</label>
+            <label>Fayda Number</label>
             <input
               type="text"
               name="NationalId"
               value={formData.NationalId}
               onChange={handleChange}
-            />
-          </div>
-          <div className="form-group-1">
-            <label>Total Birr</label>
-            <input
-              type="number"
-              name="TotalBirr"
-              value={formData.TotalBirr}
-              onChange={handleChange}
+              readOnly
             />
           </div>
 
@@ -445,6 +445,7 @@ const ViewFile = () => {
               name="FolderNumber"
               value={formData.FolderNumber}
               onChange={handleChange}
+              readOnly
             />
           </div>
           <div className="form-group-1">
@@ -454,6 +455,7 @@ const ViewFile = () => {
               name="ShelfNumber"
               value={formData.ShelfNumber}
               onChange={handleChange}
+              readOnly
             />
           </div>
           <div className="form-group-1">
@@ -463,6 +465,7 @@ const ViewFile = () => {
               name="NumberOfPages"
               value={formData.NumberOfPages}
               onChange={handleChange}
+              readOnly
             />
           </div>
           <div className="form-group-1">
@@ -472,6 +475,7 @@ const ViewFile = () => {
               name="sortingNumber"
               value={formData.sortingNumber}
               onChange={handleChange}
+              readOnly
             />
           </div>
 
@@ -482,6 +486,7 @@ const ViewFile = () => {
               name="FolderNumber"
               value={formData.FolderNumber}
               onChange={handleChange}
+              readOnly
             />
           </div>
           <div className="form-group-1">
@@ -491,6 +496,7 @@ const ViewFile = () => {
               name="ShelfNumber"
               value={formData.ShelfNumber}
               onChange={handleChange}
+              readOnly
             />
           </div>
         </div>
@@ -498,19 +504,21 @@ const ViewFile = () => {
         {/* Column 2 */}
         <div className="form-column-2">
           <h3 className="uniq-title">የክፍያ መረጃ</h3>
+
           <div className="form-group">
             <label>እዳና እገዳ</label>
-            <select
-              name="DebtRestriction"
-              value={formData.DebtRestriction}
-              onChange={handleChange}
+            <div
+              style={{
+                padding: "8px 12px",
+                backgroundColor: "#f5f5f5",
+                border: "1px solid #ccc",
+                borderRadius: "4px",
+              }}
             >
-              <option value="">Select</option>
-              <option>እዳ</option>
-              <option>እገዳ</option>
-              <option>ነፃ</option>
-            </select>
+              {formData.DebtRestriction || "—"}
+            </div>
           </div>
+
           <div className="form-group">
             <label>የግብር የመጨረሻ የተከፈለበት ዘመን</label>
             <input
@@ -521,7 +529,7 @@ const ViewFile = () => {
               onBlur={handleBlur} // alert triggers on blur
               min="1950"
               max={new Date().getFullYear() - 8}
-              placeholder="e.g., 2015"
+              readOnly
             />
             <TaxForm debt={formData.unpaidTaxDebt} />
           </div>
@@ -532,6 +540,17 @@ const ViewFile = () => {
               name="InvoiceNumber"
               value={formData.InvoiceNumber}
               onChange={handleChange}
+              readOnly
+            />
+          </div>
+          <div className="form-group" style={{ marginRight: "60px" }}>
+            <label>የግብር የተከፈለዉ መጠን</label>
+            <input
+              type="number"
+              name="FirstAmount"
+              value={formData.FirstAmount}
+              onChange={handleChange}
+              readOnly
             />
           </div>
 
@@ -545,7 +564,7 @@ const ViewFile = () => {
               onBlur={handleBlur} // 👈 alert triggers on blur
               min="1950"
               max={new Date().getFullYear() - 8}
-              placeholder="e.g., 2015"
+              readOnly
             />
 
             <TaxForm debt={formData.unpaidPropTaxDebt} />
@@ -557,6 +576,17 @@ const ViewFile = () => {
               name="InvoiceNumber2"
               value={formData.InvoiceNumber2}
               onChange={handleChange}
+              readOnly
+            />
+          </div>
+          <div className="form-group" style={{ marginRight: "60px" }}>
+            <label>የንብረት የተከፈለዉ መጠን</label>
+            <input
+              type="number"
+              name="SecondAmount"
+              value={formData.SecondAmount}
+              onChange={handleChange}
+              readOnly
             />
           </div>
 
@@ -570,7 +600,7 @@ const ViewFile = () => {
               onBlur={handleBlur} //  alert triggers on blur
               min="1950"
               max={new Date().getFullYear() - 8}
-              placeholder="e.g., 2015"
+              readOnly
             />
             <TaxForm debt={formData.unpaidLeaseDebt} />
           </div>
@@ -581,6 +611,17 @@ const ViewFile = () => {
               name="InvoiceNumber3"
               value={formData.InvoiceNumber3}
               onChange={handleChange}
+              readOnly
+            />
+          </div>
+          <div className="form-group" style={{ marginRight: "60px" }}>
+            <label>የሊዝ የተከፈለዉ መጠን</label>
+            <input
+              type="number"
+              name="ThirdAmount"
+              value={formData.ThirdAmount}
+              onChange={handleChange}
+              readOnly
             />
           </div>
         </div>
@@ -589,104 +630,83 @@ const ViewFile = () => {
           <h3 className="uniq-title">የይዞታ መረጃ</h3>
           <div className="form-group">
             <label>የይዞታው አገልግሎት</label>
-            <select
-              name="ServiceOfEstate"
-              value={formData.ServiceOfEstate}
-              onChange={handleChange}
+            <div
+              style={{
+                padding: "8px 12px",
+                backgroundColor: "#f5f5f5",
+                border: "1px solid #ccc",
+                borderRadius: "4px",
+              }}
             >
-              <option value="">Select</option>
-              <option>ለመኖረያ</option>
-              <option>ለንግድ</option>
-              <option>የመንግስት</option>
-              <option>የሐይማኖት ተቋም</option>
-              <option>ኢንቨስትመንት</option>
-              <option>የቀበሌ</option>
-              <option>የኪይ ቤቶች</option>
-              <option>ኮንዲኒሚየም</option>
-              <option>መንገድ</option>
-              <option>የማሃበር</option>
-              <option>ሌሎች</option>
-            </select>
+              {formData.ServiceOfEstate || "—"}
+            </div>
           </div>
           <div className="form-group">
             <label>የቦታው ደረጃ</label>
-            <select
-              name="placeLevel"
-              value={formData.placeLevel}
-              onChange={handleChange}
+            <div
+              style={{
+                padding: "8px 12px",
+                backgroundColor: "#f5f5f5",
+                border: "1px solid #ccc",
+                borderRadius: "4px",
+              }}
             >
-              <option value="">Select</option>
-              <option>1ኛ</option>
-              <option>2ኛ</option>
-              <option>3ኛ</option>
-              <option>4ኛ</option>
-            </select>
+              {formData.placeLevel || "—"}
+            </div>
           </div>
           <div className="form-group">
-            <label>የይዞታየተገኘበት ሁኔታ</label>
-            <select
-              name="possessionStatus"
-              value={formData.possessionStatus}
-              onChange={handleChange}
+            <label>የይዞታ የተገኘበት ሁኔታ</label>
+            <div
+              style={{
+                padding: "8px 12px",
+                backgroundColor: "#f5f5f5",
+                border: "1px solid #ccc",
+                borderRadius: "4px",
+              }}
             >
-              <option value="">Select</option>
-              <option>ነባር</option>
-              <option>ሊዝ</option>
-            </select>
+              {formData.possessionStatus || "—"}
+            </div>
           </div>
 
-          <div className="form-group" style={{ marginRight: "16px" }}>
+          <div
+            className="form-group"
+            style={{ marginRight: "6px", marginLeft: "55px" }}
+          >
             <label>የቦታ ስፋት</label>
             <input
               type="number"
               name="spaceSize"
               value={formData.spaceSize}
               onChange={handleChange}
-              style={{ width: "120px" }}
+              readOnly
+              style={{ width: "80px" }}
             />
           </div>
           <div className="form-group">
             <label>የይዞታ ማራጋገጫ</label>
-            <select
-              name="proofOfPossession"
-              value={formData.proofOfPossession}
-              onChange={handleChange}
+            <div
+              style={{
+                padding: "8px 12px",
+                backgroundColor: "#f5f5f5",
+                border: "1px solid #ccc",
+                borderRadius: "4px",
+              }}
             >
-              <option value="">Select</option>
-              <option>ካርታ</option>
-              <option>ሰነድ አልባ</option>
-              <option>ህገ-ውፕ</option>
-              <option>ምንም የሌለው</option>
-            </select>
+              {formData.proofOfPossession || "—"}
+            </div>
           </div>
           <div className="form-group">
             <label>ቀበሌ</label>
-            <select
-              name="kebele"
-              value={formData.kebele}
-              onChange={handleChange}
+            <div
+              style={{
+                padding: "8px 12px",
+                backgroundColor: "#f5f5f5",
+                border: "1px solid #ccc",
+                borderRadius: "4px",
+              }}
             >
-              <option value="">Select</option>
-              <option>01</option>
-              <option>02</option>
-              <option>03</option>
-              <option>04</option>
-              <option>05</option>
-              <option>06</option>
-              <option>07</option>
-              <option>08</option>
-              <option>09</option>
-              <option>10</option>
-              <option>11</option>
-              <option>12</option>
-              <option>13</option>
-              <option>14</option>
-              <option>15</option>
-              <option>16</option>
-              <option>17</option>
-              <option>18</option>
-              <option>19</option>
-            </select>
+              {formData.kebele || "—"}
+            </div>
           </div>
 
           <div

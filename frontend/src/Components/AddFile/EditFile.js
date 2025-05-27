@@ -24,7 +24,7 @@ const EditFile = () => {
     UPIN: "",
     PhoneNumber: "",
     NationalId: "",
-    TotalBirr: "",
+
     ServiceOfEstate: "",
     placeLevel: "",
     possessionStatus: "",
@@ -35,14 +35,17 @@ const EditFile = () => {
     LastTaxPaymtDate: "",
     unpaidTaxDebt: "",
     InvoiceNumber: "",
+    FirstAmount: "",
     lastDatePayPropTax: "",
     unpaidPropTaxDebt: "",
     InvoiceNumber2: "",
+    SecondAmount: "",
     uploadedFile: null,
     filePath: "",
     EndLeasePayPeriod: "",
     unpaidLeaseDebt: "",
     InvoiceNumber3: "",
+    ThirdAmount: "",
     FolderNumber: "",
     Row: "",
     ShelfNumber: "",
@@ -141,7 +144,6 @@ const EditFile = () => {
       UPIN: "",
       PhoneNumber: "",
       NationalId: "",
-      TotalBirr: "",
       ServiceOfEstate: "",
       placeLevel: "",
       possessionStatus: "",
@@ -152,14 +154,17 @@ const EditFile = () => {
       LastTaxPaymtDate: "",
       unpaidTaxDebt: "",
       InvoiceNumber: "",
+      FirstAmount: "",
       lastDatePayPropTax: "",
       unpaidPropTaxDebt: "",
       InvoiceNumber2: "",
+      SecondAmount: "",
       uploadedFile: null,
       filePath: "",
       EndLeasePayPeriod: "",
       unpaidLeaseDebt: "",
       InvoiceNumber3: "",
+      ThirdAmount: "",
       FolderNumber: "",
       Row: "",
       ShelfNumber: "",
@@ -223,6 +228,35 @@ const EditFile = () => {
           PropertyOwnerName: "",
         }));
       }
+    }
+  };
+
+  //validating Phone Number
+  const validatePhoneNumber = () => {
+    const phone = formData.PhoneNumber.trim();
+    const ethiopianPhoneRegex = /^(?:\+251|0)(7\d{8}|9\d{8})$/;
+
+    if (phone === "") {
+      // Clear the error when the field is empty
+      setFormErrors((prev) => ({
+        ...prev,
+        PhoneNumber: "",
+      }));
+    } else if (!ethiopianPhoneRegex.test(phone)) {
+      setFormErrors((prev) => ({
+        ...prev,
+        PhoneNumber:
+          "Invalid phone number. Use +2519XXXXXXXX, +2517XXXXXXXX, 09XXXXXXXX, or 07XXXXXXXX format.",
+      }));
+      setFormData((prev) => ({
+        ...prev,
+        PhoneNumber: "", // Clear the invalid input
+      }));
+    } else {
+      setFormErrors((prev) => ({
+        ...prev,
+        PhoneNumber: "",
+      }));
     }
   };
 
@@ -463,17 +497,39 @@ const EditFile = () => {
             />
           </div>
 
-          <div className="form-group-1">
-            <label>Phone Number</label>
+          <div className="form-group-1" style={{ position: "relative" }}>
+            <label>ስልክ ቁጥር</label>
             <input
-              type="number"
+              type="text"
               name="PhoneNumber"
               value={formData.PhoneNumber}
               onChange={handleChange}
+              onBlur={validatePhoneNumber}
             />
+            {formErrors.PhoneNumber && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "100%",
+                  left: 0,
+                  backgroundColor: "#fff4f4",
+                  color: "#cc0000",
+                  padding: "4px 8px",
+                  fontSize: "0.85em",
+                  border: "1px solid #cc0000",
+                  borderRadius: "4px",
+                  marginTop: "4px",
+                  whiteSpace: "nowrap",
+                  boxShadow: "0px 2px 6px rgba(0,0,0,0.1)",
+                  zIndex: 100,
+                }}
+              >
+                {formErrors.PhoneNumber}
+              </div>
+            )}
           </div>
           <div className="form-group-1">
-            <label>FAN</label>
+            <label>Fayda Number</label>
             <input
               type="text"
               name="NationalId"
@@ -481,15 +537,7 @@ const EditFile = () => {
               onChange={handleChange}
             />
           </div>
-          <div className="form-group-1">
-            <label>Total Birr</label>
-            <input
-              type="number"
-              name="TotalBirr"
-              value={formData.TotalBirr}
-              onChange={handleChange}
-            />
-          </div>
+
           <h3 className="uniq-title">የፋይሉ አድራሻ</h3>
           <div className="form-group-1">
             <label>አቃፊ ቁጥር</label>
@@ -587,6 +635,15 @@ const EditFile = () => {
               onChange={handleChange}
             />
           </div>
+          <div className="form-group" style={{ marginRight: "60px" }}>
+            <label>የግብር የተከፈለዉ መጠን</label>
+            <input
+              type="number"
+              name="FirstAmount"
+              value={formData.FirstAmount}
+              onChange={handleChange}
+            />
+          </div>
 
           <div className="form-group">
             <label>የንብረት ግብር የመጨረሻ የተከፈለበት ዘመን</label>
@@ -612,6 +669,15 @@ const EditFile = () => {
               onChange={handleChange}
             />
           </div>
+          <div className="form-group" style={{ marginRight: "60px" }}>
+            <label>የንብረት የተከፈለዉ መጠን</label>
+            <input
+              type="number"
+              name="SecondAmount"
+              value={formData.SecondAmount}
+              onChange={handleChange}
+            />
+          </div>
 
           <div className="form-group">
             <label>የሊዝ መጨረሻ የተከፈለበት ዘመን</label>
@@ -633,6 +699,15 @@ const EditFile = () => {
               type="number"
               name="InvoiceNumber3"
               value={formData.InvoiceNumber3}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="form-group" style={{ marginRight: "60px" }}>
+            <label>የሊዝ የተከፈለዉ መጠን</label>
+            <input
+              type="number"
+              name="ThirdAmount"
+              value={formData.ThirdAmount}
               onChange={handleChange}
             />
           </div>
@@ -677,7 +752,7 @@ const EditFile = () => {
             </select>
           </div>
           <div className="form-group">
-            <label>የይዞታየተገኘበት ሁኔታ</label>
+            <label>የይዞታ የተገኘበት ሁኔታ</label>
             <select
               name="possessionStatus"
               value={formData.possessionStatus}
