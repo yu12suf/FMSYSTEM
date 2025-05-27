@@ -1,33 +1,28 @@
-// src/App.js
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./Components/Home/Home";
 import FileUploader from "./Components/AddFile/FileUploader";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import Layout from "./Components/Layout/Layout";
 import AddFile from "./Components/AddFile/AddFile";
+import Graph from "./Components/Graph/Graph";
+import ViewFile from "./Components/AddFile/ViewFile";
+import Report from "./Components/Report/Report";
+import EditFiles from "./Components/AddFile/EditFile";
 
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/upload" element={<FileUploader />} />
-        <Route path="/add-file" element={<AddFile />} />
-
-        {/* You can add more routes here */}
-      </Routes>
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
+      <Layout>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/upload" element={<FileUploader />} />
+          <Route path="/addfile" element={<AddFile />} />
+          <Route path="/graph" element={<Graph />} />
+          <Route path="/files" element={<ViewFile />} />
+          <Route path="/report" element={<Report />} />
+          <Route path="/editfile" element={<EditFiles />} />
+        </Routes>
+      </Layout>
     </Router>
   );
 }

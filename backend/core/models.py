@@ -4,6 +4,9 @@ class Record(models.Model):
     PropertyOwnerName = models.CharField(max_length=255)
     ExistingArchiveCode = models.CharField(max_length=255, db_index=True)  # searchable
     UPIN = models.CharField(max_length=255, unique=True, db_index=True)  # searchable
+    PhoneNumber = models.CharField(max_length=255, null=True, blank=True)
+    NationalId = models.CharField(max_length=255, null=True, blank=True)
+    TotalBirr = models.CharField(max_length=255, null=True, blank=True)
     ServiceOfEstate = models.CharField(max_length=255)
     placeLevel = models.CharField(max_length=255)
     possessionStatus = models.CharField(max_length=255)
@@ -20,11 +23,12 @@ class Record(models.Model):
     filePath = models.CharField(max_length=255, null=True, blank=True)
     EndLeasePayPeriod = models.DateField(null=True, blank=True)
     unpaidLeaseDebt = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
-    InvoiceNumber3 = models.CharField(max_length=255, null=True, blank=True)
+    InvoiceNumber3  = models.CharField(max_length=255, null=True, blank=True)
     FolderNumber = models.CharField(max_length=255, null=True, blank=True)
     Row = models.CharField(max_length=255, null=True, blank=True)
     ShelfNumber = models.CharField(max_length=255, null=True, blank=True)
     NumberOfPages = models.IntegerField(null=True, blank=True)
+    sortingNumber = models.CharField(max_length=255, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)  # optional: tracking
     updated_at = models.DateTimeField(auto_now=True)      # optional: tracking
 

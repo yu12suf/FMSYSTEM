@@ -159,6 +159,15 @@
   background: linear-gradient(to right, #0d6efd); /* Bootstrap-style blue gradient */
   font-size: 15px;
   letter-spacing: 0.3px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  cursor: default; /* Optional: change to pointer if clickable */
+
+  /* Hover effect */
+.data-table th:hover {
+  background-color: #0056b3; /* Darker blue */
+  background: linear-gradient(to right, #0056b3, #0069d9); /* Slightly different gradient */
+  color: #e6e6e6; /* Light grey on hover */
+}
 }
 
 .data-table tbody tr:hover {

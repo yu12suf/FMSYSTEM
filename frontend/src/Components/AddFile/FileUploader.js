@@ -224,7 +224,7 @@ export default function FileUploader() {
       const allFiles = [...requiredFiles.filter((f) => !!f.file), ...files];
       sessionStorage.setItem("allUploadedFiles", JSON.stringify(allFiles));
 
-      navigate("/add-file?upin=" + upin);
+      navigate("/addfile?upin=" + upin);
     } catch (err) {
       console.error("Upload error:", err);
     }

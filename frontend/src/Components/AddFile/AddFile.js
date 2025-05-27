@@ -30,6 +30,10 @@ const REQUIRED_FIELDS = [
   "Row",
   "ShelfNumber",
   "NumberOfPages",
+  "PhoneNumber",
+  "NationalId",
+  "TotalBirr",
+  "sortingNumber",
 ];
 
 const FORM_DATA_KEY = "addFileFormData";
@@ -82,6 +86,9 @@ const AddFile = () => {
           PropertyOwnerName: "",
           ExistingArchiveCode: "",
           UPIN: "",
+          PhoneNumber: "",
+          NationalId: "",
+          TotalBirr: "",
           ServiceOfEstate: "",
           placeLevel: "",
           possessionStatus: "",
@@ -102,6 +109,7 @@ const AddFile = () => {
           Row: "",
           ShelfNumber: "",
           NumberOfPages: 0,
+          sortingNumber: "",
         };
   });
 
@@ -354,6 +362,9 @@ const AddFile = () => {
       PropertyOwnerName: "",
       ExistingArchiveCode: "",
       UPIN: "",
+      PhoneNumber: "",
+      NationalId: "",
+      TotalBirr: "",
       ServiceOfEstate: "",
       placeLevel: "",
       possessionStatus: "",
@@ -374,6 +385,7 @@ const AddFile = () => {
       Row: "",
       ShelfNumber: "",
       NumberOfPages: "",
+      sortingNumber: "",
     });
     setUploadedFiles([]);
     setFormErrors({});
@@ -681,6 +693,35 @@ const AddFile = () => {
               </div>
             )}
           </div>
+
+          <div className="form-group">
+            <label>Phone Number</label>
+            <input
+              type="number"
+              name="PhoneNumber"
+              value={formData.PhoneNumber}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="form-group">
+            <label>FAN</label>
+            <input
+              type="text"
+              name="NationalId"
+              value={formData.NationalId}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="form-group">
+            <label>Total Birr</label>
+            <input
+              type="number"
+              name="TotalBirr"
+              value={formData.TotalBirr}
+              onChange={handleChange}
+            />
+          </div>
+
           <div className="form-group">
             <label>የይዞታው አገልግሎት</label>
             <select
@@ -716,28 +757,7 @@ const AddFile = () => {
               <option>4ኛ</option>
             </select>
           </div>
-          <div className="form-group">
-            <label>የይዞታየተገኘበት ሁኔታ</label>
-            <select
-              name="possessionStatus"
-              value={formData.possessionStatus}
-              onChange={handleChange}
-            >
-              <option value="">Select</option>
-              <option>ነባር</option>
-              <option>ሊዝ</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label>የቦታ ስፋት</label>
-            <input
-              type="number"
-              name="spaceSize"
-              value={formData.spaceSize}
-              onChange={handleChange}
-              placeholder="0"
-            />
-          </div>
+
           <div className="form-group">
             <label>ቀበሌ</label>
             <select
@@ -924,40 +944,71 @@ const AddFile = () => {
             <input
               type="number"
               name="NumberOfPages"
-              value={formData.Number}
+              value={formData.NumberOfPages}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="form-group">
+            <label>የይዞታየተገኘበት ሁኔታ</label>
+            <select
+              name="possessionStatus"
+              value={formData.possessionStatus}
+              onChange={handleChange}
+            >
+              <option value="">Select</option>
+              <option>ነባር</option>
+              <option>ሊዝ</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label>የቦታ ስፋት</label>
+            <input
+              type="number"
+              name="spaceSize"
+              value={formData.spaceSize}
+              onChange={handleChange}
+              placeholder="0"
+            />
+          </div>
+          <div className="form-group">
+            <label>መደርደረያ ቁፕር</label>
+            <input
+              type="number"
+              name="sortingNumber"
+              value={formData.sortingNumber}
               onChange={handleChange}
             />
           </div>
         </div>
-        <div className="button-container-1">
-          {/* Remove Previous and Next buttons */}
-          {!editMode ? (
-            <button type="submit" className="submit-button-1">
-              Add Record
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="submit-button-1"
-              onClick={() => {
-                handleSaveClick();
-                resetForm();
-                setEditMode(false);
-                setEditUpin(null);
-                if (navigationContext === "edit") {
-                  setSearchResults([]);
-                  setCurrentSearchIndex(0);
-                }
-              }}
-            >
-              Save
-            </button>
-          )}
-          <button type="button" className="submit-button-1" onClick={resetForm}>
-            Clear
-          </button>
-        </div>
       </form>
+      <div className="button-container-1">
+        {/* Remove Previous and Next buttons */}
+        {!editMode ? (
+          <button type="submit" className="submit-button-1">
+            Add Record
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="submit-button-1"
+            onClick={() => {
+              handleSaveClick();
+              resetForm();
+              setEditMode(false);
+              setEditUpin(null);
+              if (navigationContext === "edit") {
+                setSearchResults([]);
+                setCurrentSearchIndex(0);
+              }
+            }}
+          >
+            Save
+          </button>
+        )}
+        <button type="button" className="submit-button-1" onClick={resetForm}>
+          Clear
+        </button>
+      </div>
       {/* File summary */}
       <div className="files-uploaded-section">
         <h4>Files to be uploaded:</h4>

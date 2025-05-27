@@ -9,6 +9,7 @@ import ViewFile from "../AddFile/ViewFile";
 import Report from "../Report/Report";
 import { useEffect } from "react";
 import Graph from "../Graph/Graph";
+import { useLocation } from "react-router-dom";
 
 const Home = () => {
   const [currentPage, setCurrentPage] = useState("home");
@@ -21,6 +22,17 @@ const Home = () => {
 
   const [searchedRecord, setSearchedRecord] = useState(null);
   const [recentRecords, setRecentRecords] = useState([]);
+
+  const location = useLocation();
+
+  useEffect(() => {
+    // When path is '/', reset states to show home page
+    if (location.pathname === "/") {
+      setShowAddFile(false);
+      setshowEditFile(false);
+      setCurrentPage("home");
+    }
+  }, [location]);
 
   useEffect(() => {
     const fetchRecentRecords = async () => {
@@ -62,7 +74,6 @@ const Home = () => {
     if (showEditFile) {
       return <EditFile />;
     }
-
     switch (currentPage) {
       case "files":
         return <ViewFile />;
@@ -164,76 +175,7 @@ const Home = () => {
         );
     }
   };
-
-  return (
-    <div className="home-container">
-      <header className="header">
-        <img src="/logo.png" alt="Logo" className="logo" />
-        <h1 className="project-title">ከተማ ልማትና ኮንስትራክሽን ቢሮ ፋይል ማንጅመንት ሲስተም</h1>
-        <img src="/logo.png" alt="Logo" className="logo" />
-      </header>
-
-      <nav className="menu-bar">
-        <ul>
-          <div className="menu-left">
-            <li
-              onClick={() => {
-                setCurrentPage("home");
-                setShowAddFile(false);
-                setshowEditFile(false);
-              }}
-            >
-              ፋይል ቆጠራ
-            </li>
-            <li
-              onClick={() => {
-                setCurrentPage("files");
-                setShowAddFile(false);
-                setshowEditFile(false);
-              }}
-            >
-              ማውጫ
-            </li>
-            <li
-              onClick={() => {
-                setCurrentPage("report");
-                setShowAddFile(false);
-                setshowEditFile(false);
-              }}
-            >
-              ሪፖርት
-            </li>
-            <li
-              onClick={() => {
-                setCurrentPage("graph");
-                setShowAddFile(false);
-                setshowEditFile(false);
-              }}
-            >
-              ግራፍ
-            </li>
-          </div>
-
-          <div className="menu-right">
-            <li
-              onClick={() => {
-                setCurrentPage("history");
-                setShowAddFile(false);
-                setshowEditFile(false);
-              }}
-            >
-              History
-            </li>
-            <li onClick={() => navigate("/")} className="logout">
-              Logout
-            </li>
-          </div>
-        </ul>
-      </nav>
-
-      <div className="content">{renderContent()}</div>
-    </div>
-  );
+  return renderContent();
 };
 
 export default Home;

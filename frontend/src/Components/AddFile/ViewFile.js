@@ -9,6 +9,7 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 
 import { useEffect } from "react";
 import TaxForm from "./TaxForm";
+import "./ViewFile.css";
 
 const ViewFile = () => {
   const [records, setRecords] = useState([]);
@@ -22,6 +23,9 @@ const ViewFile = () => {
     PropertyOwnerName: "",
     ExistingArchiveCode: "",
     UPIN: "",
+    PhoneNumber: "",
+    NationalId: "",
+    TotalBirr: "",
     ServiceOfEstate: "",
     placeLevel: "",
     possessionStatus: "",
@@ -44,6 +48,7 @@ const ViewFile = () => {
     Row: "",
     ShelfNumber: "",
     NumberOfPages: 0,
+    sortingNumber: "",
   });
 
   useEffect(() => {
@@ -115,6 +120,9 @@ const ViewFile = () => {
       PropertyOwnerName: "",
       ExistingArchiveCode: "",
       UPIN: "",
+      PhoneNumber: "",
+      NationalId: "",
+      TotalBirr: "",
       ServiceOfEstate: "",
       placeLevel: "",
       possessionStatus: "",
@@ -137,6 +145,7 @@ const ViewFile = () => {
       Row: "",
       ShelfNumber: "",
       NumberOfPages: 0,
+      sortingNumber: "",
     });
   };
 
@@ -396,6 +405,34 @@ const ViewFile = () => {
               type="text"
               name="UPIN"
               value={formData.UPIN}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div className="form-group-1">
+            <label>Phone Number</label>
+            <input
+              type="number"
+              name="PhoneNumber"
+              value={formData.PhoneNumber}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="form-group-1">
+            <label>FAN</label>
+            <input
+              type="text"
+              name="NationalId"
+              value={formData.NationalId}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="form-group-1">
+            <label>Total Birr</label>
+            <input
+              type="number"
+              name="TotalBirr"
+              value={formData.TotalBirr}
               onChange={handleChange}
             />
           </div>
@@ -664,12 +701,12 @@ const ViewFile = () => {
               onClick={handleResetForm}
               className="reset-button"
               style={{
-                padding: "0.5rem 1rem",
+                /* padding: "0.5rem 1rem",
                 backgroundColor: "#f44336", // red or any color you want
                 color: "white",
                 border: "none",
                 borderRadius: "4px",
-                cursor: "pointer",
+                cursor: "pointer",*/
                 fontWeight: "bold",
               }}
             >
