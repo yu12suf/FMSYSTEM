@@ -161,7 +161,7 @@ const Report3 = () => {
       borderRadius: "6px",
       fontSize: "1rem",
       backgroundColor: "#fff",
-      width: "100px",
+      width: "150px",
       marginBottom: "20px",
       transition: "border-color 0.3s ease",
     },
@@ -242,9 +242,19 @@ const Report3 = () => {
       padding: "12px 16px",
       textAlign: "left",
       fontSize: "1rem",
+      border: "1px solid black",
     },
     tableCell: {
-      border: "1px solid #dee2e6",
+      border: "1px solid black",
+      padding: "12px 16px",
+      textAlign: "left",
+      fontSize: "1rem",
+    },
+    lastColumnCell: {
+      backgroundColor: "green", // Green background for last column
+      color: "white",
+      fontWeight: "bold",
+      border: "1px solid black",
       padding: "12px 16px",
       textAlign: "left",
       fontSize: "1rem",
@@ -349,7 +359,7 @@ const Report3 = () => {
                       <td style={styles.tableCell}>{record.kebele}</td>
                       <td style={styles.tableCell}>{record.placeLevel}</td>
                       <td style={styles.tableCell}>{record.spaceSize}</td>
-                      <td style={styles.tableCell}>
+                      <td style={styles.lastColumnCell}>
                         {record.proofOfPossession}
                       </td>
                     </tr>

@@ -318,9 +318,9 @@ def upload_files(request, upin):
 
 ##############
 #######
-class FileDetailView(APIView):
-    def put(self, request, pk):
-        file = get_object_or_404(RecordFile, pk=pk)
+class ReplaceFileView(APIView):
+    def put(self, request, fileId):
+        file = get_object_or_404(RecordFile, id=fileId)
         uploaded_file = request.FILES.get("uploaded_file")
         if uploaded_file:
             file.uploaded_file = uploaded_file
@@ -328,8 +328,9 @@ class FileDetailView(APIView):
             return Response({"message": "File replaced successfully."}, status=status.HTTP_200_OK)
         return Response({"error": "No file provided."}, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, pk):
-        file = get_object_or_404(RecordFile, pk=pk)
+class DeleteFileView(APIView):
+    def delete(self, request, fileId):
+        file = get_object_or_404(RecordFile, id=fileId)
         if file.category == "required":
             return Response(
                 {"error": "Required files cannot be deleted."},
@@ -337,7 +338,8 @@ class FileDetailView(APIView):
             )
         file.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
+
+class UploadFileView(APIView):
     def post(self, request, upin):
         record = get_object_or_404(Record, UPIN=upin)
         uploaded_file = request.FILES.get("uploaded_file")
@@ -353,6 +355,7 @@ class FileDetailView(APIView):
             )
             return Response({"message": "File uploaded successfully."}, status=status.HTTP_201_CREATED)
         return Response({"error": "Invalid file or display name."}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class RecordUpdateView(APIView):
     def put(self, request, upin):

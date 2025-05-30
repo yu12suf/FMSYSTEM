@@ -1,15 +1,22 @@
 /* Container for the graphs */
 .graph-container {
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
   align-items: flex-start;
   gap: 30px;
   flex-wrap: wrap;
-  margin: 80px 20px; /* Increased top margin for spacing */
+  margin: 80px 20px;
   padding: 20px;
   background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Hover effect for graph container */
+.graph-container:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
 /* Individual graph cards */
@@ -20,15 +27,13 @@
   text-align: center;
   background: #ffffff;
   border-radius: 16px;
-  padding: 80px 24px 80px; /* Increased top and bottom padding for spacing */
+  padding: 80px 24px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 50px;
   transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
-  margin-bottom: 50px; /* Increased bottom margin for spacing */
-  margin-top: 30px; /* Increased top margin for spacing */
-  border: 1px solid #e0e0e0;
 }
 
-/* Hover effect for graph cards */
+/* Hover effect for individual graph cards */
 .graph-1:hover, .graph-2:hover {
   transform: translateY(-8px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
@@ -40,116 +45,9 @@
   font-size: 22px;
   font-weight: 700;
   color: #4e54c8;
-  margin-bottom: 60px; /* Increased bottom margin for spacing */
+  margin-bottom: 60px;
   border-bottom: 2px solid #ddd;
   padding-bottom: 10px;
   text-transform: uppercase;
   letter-spacing: 1px;
-}
-
-/* Legend styling */
-.recharts-default-legend {
-  display: flex !important;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 30px; /* Increased top margin for spacing */
-  font-size: 14px;
-  font-weight: 500;
-  color: #333;
-  max-width: 100%;
-}
-
-/* Left column for legend items */
-.recharts-default-legend .legend-left {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  margin-right: 20px;
-}
-
-/* Right column for legend items */
-.recharts-default-legend .legend-right {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  margin-left: 20px;
-}
-
-/* Bottom row for legend items */
-.recharts-default-legend .legend-bottom {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-top: 20px;
-}
-
-/* Individual legend items */
-.recharts-legend-item {
-  display: flex !important;
-  align-items: center;
-  margin: 8px 12px;
-  padding: 8px 12px;
-  border-radius: 12px;
-  background-color: #f8f9fa;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  transition: background-color 0.3s ease, transform 0.3s ease;
-  cursor: pointer;
-}
-
-/* Hover effect for legend items */
-.recharts-legend-item:hover {
-  background-color: #e2e6ea;
-  transform: scale(1.05);
-}
-
-/* Legend icon spacing */
-.recharts-surface {
-  margin-right: 8px;
-}
-
-/* Responsive adjustments for tablets */
-@media (max-width: 768px) {
-  .graph-container {
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-    margin: 60px 10px; /* Adjusted margin for smaller screens */
-    padding: 10px;
-  }
-
-  .graph-1, .graph-2 {
-    max-width: 90%;
-    padding: 70px 20px; /* Adjusted padding for smaller screens */
-    margin-top: 20px;
-  }
-
-  .graph-1 h2, .graph-2 h2 {
-    font-size: 20px;
-    margin-bottom: 50px; /* Adjusted spacing for smaller screens */
-  }
-
-  .recharts-default-legend {
-    font-size: 13px;
-    margin-top: 40px; /* Adjusted spacing for legends */
-  }
-}
-
-/* Responsive adjustments for mobile devices */
-@media (max-width: 480px) {
-  .graph-1, .graph-2 {
-    min-width: 100%;
-    padding: 60px 16px; /* Adjusted padding for mobile screens */
-  }
-
-  .graph-1 h2, .graph-2 h2 {
-    font-size: 18px;
-    margin-bottom: 40px; /* Adjusted spacing for smaller screens */
-  }
-
-  .recharts-legend-item {
-    font-size: 12px;
-    margin: 6px 8px;
-    padding: 6px 10px;
-  }
 }

@@ -246,13 +246,15 @@ const Report5 = () => {
       padding: "12px 16px",
       textAlign: "left",
       fontSize: "1rem",
+      border: "1px solid black",
     },
     tableCell: {
-      border: "1px solid #dee2e6",
+      border: "1px solid black",
       padding: "12px 16px",
       textAlign: "left",
       fontSize: "1rem",
     },
+
     tableRowEven: {
       backgroundColor: "#f8f9fa",
     },
@@ -260,6 +262,7 @@ const Report5 = () => {
       backgroundColor: "green",
       color: "white",
       fontWeight: "bold",
+      border: "1px solid black",
     },
     reportHeader: {
       textAlign: "center",

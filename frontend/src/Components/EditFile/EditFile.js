@@ -100,7 +100,7 @@ export default function EditFile() {
 
     try {
       const res = await axios.put(
-        `http://localhost:8000/api/files/${fileId}/`,
+        `http://localhost:8000/api/files/${fileId}/replace/`,
         formData,
         {
           headers: {
@@ -132,7 +132,7 @@ export default function EditFile() {
   const handleDeleteFile = async (fileId) => {
     try {
       const res = await axios.delete(
-        `http://localhost:8000/api/files/${fileId}/`
+        `http://localhost:8000/api/files/${fileId}/delete/`
       );
       if (res.status === 204) {
         showToast("File deleted successfully.");
@@ -172,7 +172,7 @@ export default function EditFile() {
           fileFormData.append("category", "additional");
 
           const fileRes = await axios.post(
-            `http://localhost:8000/api/files/${formData.UPIN}/`,
+            `http://localhost:8000/api/files/${formData.UPIN}/upload/`,
             fileFormData,
             {
               headers: {
@@ -208,6 +208,7 @@ export default function EditFile() {
     setAdditionalFiles((prevFiles) => [...prevFiles, { file, name }]);
     setAdditionalFile(null); // Reset file input
     setAdditionalFileName(""); // Reset name input
+    showToast("Additional File added to the list.");
   };
 
   const resetForm = () => {

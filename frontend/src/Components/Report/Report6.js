@@ -250,6 +250,15 @@ const Report6 = () => {
       textAlign: "left",
       fontSize: "1rem",
     },
+    lastColumnCell: {
+      backgroundColor: "green", // Green background for last column
+      color: "white",
+      fontWeight: "bold",
+      border: "1px solid black",
+      padding: "12px 16px",
+      textAlign: "left",
+      fontSize: "1rem",
+    },
     tableRowEven: {
       backgroundColor: "#f8f9fa",
     },
@@ -364,7 +373,7 @@ const Report6 = () => {
                       <td style={styles.tableCell}>{record.placeLevel}</td>
                       <td style={styles.tableCell}>{record.spaceSize}</td>
                       <td style={styles.tableCell}>{record.ServiceOfEstate}</td>
-                      <td style={styles.tableCell}>{record.kebele}</td>
+                      <td style={styles.lastColumnCell}>{record.kebele}</td>
                     </tr>
                   ))}
                 </tbody>

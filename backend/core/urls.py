@@ -7,8 +7,10 @@ from .views import (
     RecentRecordsView,
     ProofOfPossessionStats,
     ServiceOfEstateStats,
-    FileDetailView,
     RecordUpdateView,
+    ReplaceFileView,
+    UploadFileView,
+    DeleteFileView,
     search_records_by_service,  # Add this line
     search_records_by_kebele,  # Add this line
     search_records_by_proof,  # Add this line
@@ -39,10 +41,17 @@ urlpatterns = [
     path("api/statistics/service-of-estate", ServiceOfEstateStats.as_view(), name='service-of-estate-stats'),  # Service of Estate Stats
     path('api/records/<str:upin>/files/', upload_files, name='upload_files'),  # Upload or list files for a record
     path('api/records/check-upin/<str:upin>/', check_upin, name='check-upin'),  # Check if a UPIN exists
-    path("api/files/<int:pk>/", FileDetailView.as_view(), name="file-detail"),
+    
+    # File operations using fileId
+    path("api/files/<int:fileId>/replace/", ReplaceFileView.as_view(), name="replace-file"),
+    path("api/files/<int:fileId>/delete/", DeleteFileView.as_view(), name="delete-file"),
+
+    # File upload using upin
+    path("api/files/<str:upin>/upload/", UploadFileView.as_view(), name="upload-file"),
+
+    # Record update using upin
     path("api/records/<str:upin>/", RecordUpdateView.as_view(), name="record-update"),
-    path("api/files/<str:upin>/", FileDetailView.as_view(), name="file-upload"),
-]
+    ]
 
 # Add router URLs
 urlpatterns += router.urls
