@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import "./EditFile.css";
 
@@ -147,6 +147,11 @@ export default function EditFile() {
   };
 
   const handleSaveRecord = async () => {
+    // Check for validation errors
+    if (Object.values(formErrors).some((error) => error)) {
+      showToast("Please fix validation errors before saving.", "error");
+      return;
+    }
     try {
       // Validate UPIN before proceeding
       if (!formData.UPIN || formData.UPIN.trim() === "") {
@@ -287,10 +292,95 @@ export default function EditFile() {
                   <input
                     type="text"
                     value={value}
-                    onChange={(e) =>
-                      setFormData({ ...formData, [key]: e.target.value })
-                    }
+                    onChange={(e) => {
+                      const newValue = e.target.value;
+                      setFormData({ ...formData, [key]: newValue });
+
+                      // Perform validation based on the field
+                      let error = "";
+                      if (key === "PropertyOwnerName") {
+                        const characterOnlyRegex = /^[A-Za-z\u1200-\u135A\s]*$/;
+                        error = characterOnlyRegex.test(newValue)
+                          ? ""
+                          : "Please enter only valid Amharic or English characters.";
+                      } else if (key === "PhoneNumber") {
+                        const ethiopianPhoneRegex =
+                          /^(?:\+251|0)(7\d{8}|9\d{8})$/;
+                        error =
+                          newValue.trim() === ""
+                            ? ""
+                            : ethiopianPhoneRegex.test(newValue)
+                            ? ""
+                            : "Invalid phone number. Use +2519XXXXXXXX, +2517XXXXXXXX, 09XXXXXXXX, or 07XXXXXXXX format.";
+                      } else if (
+                        key === "LastTaxPaymtDate" ||
+                        key === "lastDatePayPropTax" ||
+                        key === "EndLeasePayPeriod"
+                      ) {
+                        const parsed = parseInt(newValue, 10);
+                        const ethiopianYear = new Date().getFullYear() - 8;
+                        error =
+                          !newValue ||
+                          isNaN(parsed) ||
+                          parsed < 1950 ||
+                          parsed > ethiopianYear
+                            ? `Please enter a year between 1950 and ${ethiopianYear}.`
+                            : "";
+                      }
+
+                      setFormErrors((prevErrors) => ({
+                        ...prevErrors,
+                        [key]: error,
+                      }));
+                    }}
+                    onBlur={(e) => {
+                      const newValue = e.target.value;
+
+                      // Perform validation on blur
+                      let error = "";
+                      if (key === "PropertyOwnerName") {
+                        const characterOnlyRegex = /^[A-Za-z\u1200-\u135A\s]*$/;
+                        error = characterOnlyRegex.test(newValue)
+                          ? ""
+                          : "Please enter only valid Amharic or English characters.";
+                      } else if (key === "PhoneNumber") {
+                        const ethiopianPhoneRegex =
+                          /^(?:\+251|0)(7\d{8}|9\d{8})$/;
+                        error =
+                          newValue.trim() === ""
+                            ? ""
+                            : ethiopianPhoneRegex.test(newValue)
+                            ? ""
+                            : "Invalid phone number. Use +2519XXXXXXXX, +2517XXXXXXXX, 09XXXXXXXX, or 07XXXXXXXX format.";
+                      } else if (key === "LastTaxPaymtDate") {
+                        const parsed = parseInt(newValue, 10);
+                        const ethiopianYear = new Date().getFullYear() - 8;
+                        error =
+                          !newValue ||
+                          isNaN(parsed) ||
+                          parsed < 1950 ||
+                          parsed > ethiopianYear
+                            ? `Please enter a year between 1950 and ${ethiopianYear}.`
+                            : "";
+                      }
+
+                      setFormErrors((prevErrors) => ({
+                        ...prevErrors,
+                        [key]: error,
+                      }));
+                    }}
                   />
+                  {formErrors[key] && (
+                    <div
+                      style={{
+                        color: "#cc0000",
+                        fontSize: "0.85em",
+                        marginTop: "4px",
+                      }}
+                    >
+                      {formErrors[key]}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -304,6 +394,13 @@ export default function EditFile() {
                   <ul className="file-list">
                     {files.map((file) => (
                       <li key={file.id}>
+                        <span
+                          className="file-icon"
+                          role="img"
+                          aria-label="file"
+                        >
+                          📄
+                        </span>
                         <span className="file-name">
                           {file.display_name ||
                             file.uploaded_file.split("/").pop()}
@@ -361,6 +458,39 @@ export default function EditFile() {
               >
                 Add File
               </button>
+
+              <div className="additional-files-list">
+                {additionalFiles.map((file, index) => (
+                  <div key={index} className="additional-file-item">
+                    <span className="file-icon" role="img" aria-label="file">
+                      📄
+                    </span>
+                    <span className="file-name">{file.name}</span>
+                    <span className="file-category">Additional</span>{" "}
+                    {/* Add category */}
+                    <button
+                      className="view-file-btn"
+                      onClick={() => {
+                        const fileURL = URL.createObjectURL(file.file);
+                        window.open(fileURL, "_blank");
+                      }}
+                    >
+                      View
+                    </button>
+                    <button
+                      className="remove-file-btn"
+                      onClick={() => {
+                        setAdditionalFiles((prevFiles) =>
+                          prevFiles.filter((_, i) => i !== index)
+                        );
+                        showToast("File removed from the list.");
+                      }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <button className="save-record-btn" onClick={handleSaveRecord}>

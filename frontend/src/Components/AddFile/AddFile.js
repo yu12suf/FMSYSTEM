@@ -36,7 +36,7 @@ const REQUIRED_FILES = [
 
 const FORM_DATA_KEY = "addFileFormData";
 
-function AddFile() {
+function AddFile({ onRecordAdded }) {
   const navigate = useNavigate();
   const formRef = useRef(null);
 
@@ -461,9 +461,15 @@ function AddFile() {
       });
 
       if (response.ok) {
-        await fetchRecords();
+        //await fetchRecords();
+        const newRecord = await response.json(); // Get the newly added record
         resetForm();
         showToast("Record added successfully!", "success");
+
+        // Call the callback to update the table in Home.js
+        if (typeof onRecordAdded === "function") {
+          onRecordAdded(newRecord);
+        }
       } else {
         showToast("Failed to add record. Please try again.", "error");
       }

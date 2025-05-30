@@ -183,6 +183,68 @@
   color: #721c24;
 }
 
+
+/*             css for additional file display section*/
+
+.additional-files-list {
+  margin-top: 20px;
+}
+
+.additional-file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  background-color: #f9f9f9;
+}
+
+.file-name {
+  flex: 1;
+  font-size: 14px;
+  color: #333;
+}
+
+.view-file-btn,
+.remove-file-btn {
+  margin-left: 10px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.view-file-btn {
+  background-color: #007bff;
+  color: white;
+}
+
+.remove-file-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+.view-file-btn:hover {
+  background-color: #0056b3;
+}
+
+.remove-file-btn:hover {
+  background-color: #c82333;
+}
+.file-category {
+  margin-left: 10px;
+  font-size: 12px;
+  color: #555;
+  font-weight: bold;
+}
+/*-------------to here--------*/
+
+
+
+
 /* Responsive design */
 @media (max-width: 768px) {
   .edit-file-container {

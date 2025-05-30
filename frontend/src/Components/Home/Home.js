@@ -67,9 +67,13 @@ const Home = () => {
     }
   };
 
+  const handleRecordAdded = (newRecord) => {
+    setSearchedRecord(newRecord); // Update the searchedRecord state
+  };
+
   const renderContent = () => {
     if (showAddFile) {
-      return <AddFile />;
+      return <AddFile onRecordAdded={handleRecordAdded} />; // Pass the callback
     }
     if (showEditFile) {
       return <EditFile />;
