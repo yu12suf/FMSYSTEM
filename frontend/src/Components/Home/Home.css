@@ -133,48 +133,73 @@
   margin-right: 0px;
 }
 
+/* Modernized Table Styling */
 .data-table {
   width: 100%; /* Full width */
   border-collapse: collapse; /* Collapse borders */
-  margin-top: 100px; /* Space above the table */
-
-   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  background-color: white;
-  border-radius: 8px;
-  overflow: hidden;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-
+  margin-top: 50px; /* Space above the table */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Add shadow for depth */
+  background-color: #ffffff; /* White background */
+  border-radius: 12px; /* Rounded corners */
+  overflow: hidden; /* Prevent overflow */
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; /* Modern font */
+  font-size: 1rem; /* Adjust font size */
 }
 
-.data-table th,
-.data-table td {
-  border: 1px solid #dddddd; /* Light gray border */
+/* Table Header */
+.data-table th {
+  background: linear-gradient(to right, #4e54c8, #8f94fb); /* Gradient background */
+  color: #ffffff; /* White text */
   text-align: left; /* Align text to the left */
   padding: 15px; /* Padding inside cells */
+  font-weight: 600; /* Bold text */
+  text-transform: uppercase; /* Uppercase text */
+  letter-spacing: 0.5px; /* Slight letter spacing */
+  border-bottom: 2px solid #ddd; /* Bottom border */
+  position: sticky; /* Sticky header */
+  top: 0; /* Stick to the top */
+  z-index: 1; /* Ensure it stays above content */
 }
 
-.data-table th {
-  background-color: #007bff; /* Blue background for header */
-  color: white; /* White text color */
-  background: linear-gradient(to right, #0d6efd); /* Bootstrap-style blue gradient */
-  font-size: 15px;
-  letter-spacing: 0.3px;
-  transition: background-color 0.3s ease, color 0.3s ease;
-  cursor: default; /* Optional: change to pointer if clickable */
-
-  /* Hover effect */
-.data-table th:hover {
-  background-color: #0056b3; /* Darker blue */
-  background: linear-gradient(to right, #0056b3, #0069d9); /* Slightly different gradient */
-  color: #e6e6e6; /* Light grey on hover */
+/* Table Rows */
+.data-table tbody tr {
+  transition: background-color 0.3s ease; /* Smooth transition for hover effect */
 }
+
+.data-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9; /* Light gray for even rows */
 }
 
 .data-table tbody tr:hover {
-  background-color: lab(97.56% -1.84 0.96 / 0.76);
+  background-color: #f1f5ff; /* Light blue on hover */
 }
-.data-table tbody tr:nth-child(even) {
-  background-color: #f9f9f9;
+
+/* Table Cells */
+.data-table td {
+  padding: 15px; /* Padding inside cells */
+  border-bottom: 1px solid #ddd; /* Bottom border */
+  color: #333333; /* Dark text */
+  font-weight: 500; /* Slightly bold text */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .data-table {
+    font-size: 0.9rem; /* Adjust font size for smaller screens */
+    overflow-x: auto; /* Enable horizontal scrolling */
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 10px; /* Adjust padding */
+  }
+}
+
+@media (max-width: 480px) {
+  .data-table th,
+  .data-table td {
+    padding: 8px; /* Further adjust padding for very small screens */
+  }
 }
 
 

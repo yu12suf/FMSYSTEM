@@ -1,100 +1,111 @@
+/* Root container */
 .app {
-    font-family: Arial, sans-serif;
-    background-color: #f7f7f7;
-    padding: 20px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f4f6f8;
+  padding: 40px 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+  border-radius: 12px;
 }
 
+/* Heading */
+.app h1 {
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 40px;
+}
+
+/* Report item spacing */
 .report-item {
-    margin: 10px 0;
+  margin-bottom: 24px;
 }
 
+/* Report button */
 .report-button {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  padding: 16px 24px; /* Increase padding for height */
-  font-size: 18px; /* Increase font size */
-  font-weight: bold; /* Optional: make text bolder */
-  background-color: #005f7f;
-  border: 1px solid #ccc;
-  border-radius: 8px;
+  padding: 18px 24px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #007b9e, #00a6c1);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
   cursor: pointer;
-  margin-bottom: 12px;
-  color: white;
-
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
 }
 
 .report-button:hover {
-    background-color: #005f7f;
-      background: linear-gradient(to right, #28a745, yellow);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: linear-gradient(135deg, #00a6c1, #007b9e);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+}
+
+/* Report title and kebele */
+.report-button span:first-child {
+  flex: 1;
+  text-align: left;
 }
 
 .kebele-label {
-    margin-left: auto; /* Pushes the kebele label to the right */
-    font-size: 16px;
-
+  font-size: 0.95rem;
+  color: #e0f7fa;
+  text-align: right;
+  margin-left: 10px;
 }
 
+/* Report content */
 .report-content {
-    background-color: #e7f3fe;
-    padding: 10px;
-    margin-top: 5px;
-    border-radius: 5px;
+  background-color: #ffffff;
+  padding: 20px 24px;
+  margin-top: 12px;
+  font-size: 1rem;
+  color: #333;
+  line-height: 1.6;
+  border-radius: 8px;
+  border: 1px solid #dfe3e8;
+  box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.05);
+  animation: fadeIn 0.3s ease;
 }
 
-/*********report  ******/
-.button-group{
-    margin-left: 10px;
+/* Fade in animation for content */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-.button-group button{
-    margin-bottom: 8px; /* Adds spacing between buttons */
-    background-color: #005f7f;
-}
-.app h1{
-    text-align: center;
-}
-  
-/* Responsive styles for reports section */
+
+/* Responsive adjustments */
 @media (max-width: 768px) {
   .app {
-    padding: 10px;
+    padding: 20px 15px;
   }
 
   .report-button {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 12px 16px;
-    font-size: 16px;
-  }
-
-  .kebele-label {
-    margin-left: 0;
-    margin-top: 8px;
-    font-size: 14px;
-    align-self: flex-end;
-  }
-
-  .button-group {
-    margin-left: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .button-group button {
-    width: 100%;
-    font-size: 16px;
+    padding: 16px 20px;
+    font-size: 1rem;
   }
 
   .report-content {
-    padding: 8px;
-    font-size: 14px;
+    padding: 18px 20px;
+    font-size: 0.95rem;
+  }
+
+  .kebele-label {
+    font-size: 0.85rem;
   }
 
   .app h1 {
-    font-size: 22px;
+    font-size: 2rem;
   }
 }

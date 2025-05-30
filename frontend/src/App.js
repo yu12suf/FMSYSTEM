@@ -1,13 +1,13 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./Components/Home/Home";
-import FileUploader from "./Components/AddFile/FileUploader";
+import FileUploader from "./Components/FileUploader/FileUploader";
 import Layout from "./Components/Layout/Layout";
 import AddFile from "./Components/AddFile/AddFile";
 import Graph from "./Components/Graph/Graph";
-import ViewFile from "./Components/AddFile/ViewFile";
+import ViewFile from "./Components/ViewFile/ViewFile";
 import Report from "./Components/Report/Report";
-import EditFiles from "./Components/AddFile/EditFile";
+import EditFiles from "./Components/EditFile/EditFile";
 
 function App() {
   return (

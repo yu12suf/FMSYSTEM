@@ -1,14 +1,14 @@
 from rest_framework import serializers
 from .models import Record, RecordFile
+import hashlib
 
 class RecordFileSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecordFile
-        fields = ['id', 'uploaded_file', 'uploaded_at']
-        read_only_fields = ['id', 'uploaded_at']
+        fields = '__all__'
 
 class RecordSerializer(serializers.ModelSerializer):
-    files = RecordFileSerializer(many=True, read_only=True)
+    files = RecordFileSerializer(many=True, read_only=True)  # Read-only for related files
 
     class Meta:
         model = Record
@@ -25,3 +25,65 @@ class RecordSerializer(serializers.ModelSerializer):
             if val and len(val) == 4 and val.isdigit():
                 data[field] = f"{val}-01-01"
         return super().to_internal_value(data)
+
+    def validate_LastTaxPaymtDate(self, value):
+        if value and value.year < 1900:
+            raise serializers.ValidationError("LastTaxPaymtDate must be after 1900.")
+        return value
+
+        ''' def validate(self, data):
+        # Ensure date fields are in the correct order
+        if data.get('LastTaxPaymtDate') and data.get('EndLeasePayPeriod'):
+            if data['LastTaxPaymtDate'] > data['EndLeasePayPeriod']:
+                raise serializers.ValidationError("LastTaxPaymtDate cannot be after EndLeasePayPeriod.")
+        return data'''
+
+    def create(self, validated_data):
+        """
+        Override the create method to handle related files.
+        """
+        # Extract files from the context (request)
+        request = self.context.get('request')
+        files = request.FILES.getlist('uploaded_files') if request else []
+
+        # Create the record
+        record = super().create(validated_data)
+
+        # Save related files
+        for file in files:
+             # Generate hash for the file content
+             hasher = hashlib.sha256()
+             for chunk in file.chunks():
+                 hasher.update(chunk)
+             file_hash = hasher.hexdigest()
+
+             # Prevent duplicate files
+             if not RecordFile.objects.filter(file_hash=file_hash, record=record).exists():
+                 RecordFile.objects.create(record=record, uploaded_file=file, file_hash=file_hash)
+
+        return record
+
+    def update(self, instance, validated_data):
+        """
+        Override the update method to handle related files.
+        """
+        # Extract files from the context (request)
+        request = self.context.get('request')
+        files = request.FILES.getlist('uploaded_files') if request else []
+
+        # Update the record
+        instance = super().update(instance, validated_data)
+
+        # Save new related files
+        for file in files:
+            # Generate hash for the file content
+            hasher = hashlib.sha256()
+            for chunk in file.chunks():
+              hasher.update(chunk)
+            file_hash = hasher.hexdigest()
+
+             # Prevent duplicate files
+            if not RecordFile.objects.filter(file_hash=file_hash, record=instance).exists():
+               RecordFile.objects.create(record=instance, uploaded_file=file, file_hash=file_hash)
+
+        return instance

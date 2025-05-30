@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='recordfile',
-            name='display_name',
+            name='file_hash',
             field=models.CharField(blank=True, max_length=255),
         ),
     ]

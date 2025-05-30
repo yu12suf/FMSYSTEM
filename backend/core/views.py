@@ -4,13 +4,16 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.decorators import api_view, parser_classes
+from django.db.models import Count
+from rest_framework.generics import ListAPIView
+from rest_framework import viewsets
 
 from .models import Record, RecordFile
-from .serializers import RecordSerializer
-from django.db.models import Count
+from .serializers import RecordSerializer, RecordFileSerializer
 
+import mimetypes
+import hashlib
 
-from rest_framework.generics import ListAPIView
 # Create or List Records
 class RecordListCreateView(APIView):
     parser_classes = [MultiPartParser, FormParser]
@@ -23,45 +26,37 @@ class RecordListCreateView(APIView):
     def post(self, request):
         print("Incoming request data:", request.data)
 
-        files = request.FILES.getlist('uploaded_files')
+        files = request.FILES.getlist('files')
         data = request.data.copy()
-        data.pop('uploaded_files', None)
+        
 
-        serializer = RecordSerializer(data=data)
+        # Check if a record with the same UPIN already exists
+        upin = data.get('UPIN')
+        if Record.objects.filter(UPIN=upin).exists():
+            return Response(
+                {'error': f"A record with UPIN '{upin}' already exists."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        serializer = RecordSerializer(data=data, context={'request': request})
         if serializer.is_valid():
             record = serializer.save()
 
             # Save related files
-            for f in files:
-                RecordFile.objects.create(record=record, uploaded_file=f)
+            for idx, file in enumerate(files):
+                display_name = request.data.getlist('names[]')[idx] if idx < len(request.data.getlist('names[]')) else file.name
+                category = request.data.getlist('categories[]')[idx] if idx < len(request.data.getlist('categories[]')) else "Uncategorized"
+                RecordFile.objects.create(
+                    record=record,
+                    uploaded_file=file,
+                    display_name=display_name,
+                    category=category
+                )
 
             return Response(RecordSerializer(record).data, status=status.HTTP_201_CREATED)
 
+        print("Validation errors:", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    queryset = Record.objects.all()
-    serializer_class = RecordSerializer
-
-    def get_queryset(self):
-        queryset = Record.objects.all()
-
-        # Sorting (if order=desc is specified)
-        order = self.request.query_params.get('order')
-        if order == 'desc':
-            queryset = queryset.order_by('-created_at')  # Make sure you have a 'created_at' field
-        else:
-            queryset = queryset.order_by('created_at')
-
-        # Limit
-        limit = self.request.query_params.get('limit')
-        if limit:
-            try:
-                limit = int(limit)
-                queryset = queryset[:limit]
-            except ValueError:
-                pass
-
-        return queryset
-
 
 # Search by UPIN or File Code
 class RecordSearchView(APIView):
@@ -79,7 +74,6 @@ class RecordSearchView(APIView):
         serializer = RecordSerializer(records, many=True)
         return Response(serializer.data)
 
-
 # Edit or Delete a record by PK
 class RecordDetailView(APIView):
     parser_classes = [MultiPartParser, FormParser]
@@ -93,12 +87,13 @@ class RecordDetailView(APIView):
         data = request.data.copy()
         data.pop('uploaded_files', None)
 
-        serializer = RecordSerializer(record, data=data)
+        serializer = RecordSerializer(record, data=data, context={'request': request})
         if serializer.is_valid():
             updated_record = serializer.save()
 
             # Save new uploaded files if any
             for f in files:
+                print(f"Saving file: {f.name}")  # Debugging log
                 RecordFile.objects.create(record=updated_record, uploaded_file=f)
 
             return Response(RecordSerializer(updated_record).data)
@@ -110,76 +105,65 @@ class RecordDetailView(APIView):
         record.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-
 # Update a record by UPIN
 class RecordUpdateByUPIN(APIView):
+    parser_classes = [MultiPartParser, FormParser]
+
     def put(self, request, upin):
         record = get_object_or_404(Record, UPIN=upin)
-        serializer = RecordSerializer(record, data=request.data)
+        serializer = RecordSerializer(record, data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# Upload a single file to a record by UPIN
-@api_view(['PUT'])
-@parser_classes([MultiPartParser, FormParser])
-def upload_files_to_record(request, upin):
-    try:
-        record = Record.objects.get(UPIN=upin)
-    except Record.DoesNotExist:
-        return Response({'error': 'Record not found'}, status=404)
-
-    uploaded_file = request.FILES.get('uploaded_files')
-    if uploaded_file:
-        RecordFile.objects.create(record=record, uploaded_file=uploaded_file)
-        return Response({'status': 'file uploaded'}, status=201)
-
-    return Response({'error': 'No file provided'}, status=400)
-
 
 # Search by Service of Estate
 @api_view(['GET'])
 def search_records_by_service(request):
     service = request.GET.get('ServiceOfEstate')
-    records = Record.objects.filter(ServiceOfEstate=service) if service else Record.objects.none()
-    serializer = RecordSerializer(records, many=True)
-    return Response(serializer.data)
-
+    if service:
+        records = Record.objects.filter(ServiceOfEstate=service)
+        serializer = RecordSerializer(records, many=True)
+        return Response(serializer.data, status=200)
+    return Response({'error': 'ServiceOfEstate parameter is required'}, status=400)
 
 # Search by Kebele
 @api_view(['GET'])
 def search_records_by_kebele(request):
     kebele = request.GET.get('kebele')
-    records = Record.objects.filter(kebele=kebele) if kebele else Record.objects.none()
-    serializer = RecordSerializer(records, many=True)
-    return Response(serializer.data)
-
+    if kebele:
+       records = Record.objects.filter(kebele=kebele) 
+       serializer = RecordSerializer(records, many=True)
+       return Response(serializer.data, status=200)
+    return Response({'error': 'kebele parameter is required'}, status=400)
 
 # Search by Proof of Possession
 @api_view(['GET'])
 def search_records_by_proof(request):
     proof = request.GET.get('proofOfPossession')
-    records = Record.objects.filter(proofOfPossession=proof) if proof else Record.objects.none()
-    serializer = RecordSerializer(records, many=True)
-    return Response(serializer.data)
-
+    if proof:
+      records = Record.objects.filter(proofOfPossession=proof) 
+      serializer = RecordSerializer(records, many=True)
+      return Response(serializer.data, status=200)
+    return Response({'error': 'proofOfPossession parameter is required'}, status=400)
 
 # Search by Possession Status
 @api_view(['GET'])
 def search_records_by_possession(request):
     possession = request.GET.get('possessionStatus')
-    records = Record.objects.filter(possessionStatus=possession) if possession else Record.objects.none()
-    serializer = RecordSerializer(records, many=True)
-    return Response(serializer.data)
+    if possession:
+      records = Record.objects.filter(possessionStatus=possession) 
+      serializer = RecordSerializer(records, many=True)
+      return Response(serializer.data, status=200)
+    return Response({'error': 'possessionStatus parameter is required'}, status=400)
 
 class RecentRecordsView(ListAPIView):
     serializer_class = RecordSerializer
 
     def get_queryset(self):
         return Record.objects.all().order_by('-created_at')[:4]
-    
 
 class ProofOfPossessionStats(APIView):
     def get(self, request):
@@ -190,7 +174,6 @@ class ProofOfPossessionStats(APIView):
             .order_by("-count")
         )
         return Response(stats)
-    
 
 class ServiceOfEstateStats(APIView):
     def get(self, request):
@@ -200,88 +183,69 @@ class ServiceOfEstateStats(APIView):
             .annotate(count=Count("ServiceOfEstate"))
             .order_by("-count")
         )
-        return Response(stats)    
-@api_view(['POST'])
-def upload_files(request, upin):
-    print("Received UPIN:", upin)
-    try:
-        record = Record.objects.get(UPIN=upin)
-    except Record.DoesNotExist:
-        return Response({'error': 'Record not found.'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(stats)
 
-    files = request.FILES.getlist('uploadedFile')
-    archive_codes = request.data.getlist('ExistingArchiveCode')
+@api_view(['GET'])
+def check_upin(request, upin):
+    exists = Record.objects.filter(UPIN=upin).exists()
+    return Response({"exists": exists}, status=200)
 
-    if len(files) != len(archive_codes):
-        return Response({'error': 'Mismatch between files and archive codes.'}, status=status.HTTP_400_BAD_REQUEST)
-
-    for f, code in zip(files, archive_codes):
-        RecordFile.objects.create(
-            record=record,
-            uploadedFile=f,
-            ExistingArchiveCode=code
-        )
-
-    return Response({'message': 'Files uploaded successfully.'}, status=status.HTTP_201_CREATED)
-
-
-
-
-
-# new code below here
-from rest_framework import viewsets
-
-from .serializers import RecordSerializer
-from .models import Record, RecordFile
-
-# Handles creating the Record (with or without inline uploaded files)
-class RecordCreateView(APIView):
-    parser_classes = [MultiPartParser, FormParser]
-
-    def post(self, request):
-        print("Incoming request data:", request.data)
-
-        # Extract files uploaded in the same form (optional)
-        files = request.FILES.getlist('uploaded_files')
-
-        # Copy request.data to modify
-        data = request.data.copy()
-        data.pop('uploaded_files', None)  # Remove files key if exists
-
-        serializer = RecordSerializer(data=data)
-        if serializer.is_valid():
-            record = serializer.save()
-
-            # Save inline files (if any)
-            for f in files:
-                RecordFile.objects.create(record=record, uploaded_file=f)
-
-            result = RecordSerializer(record)
-            return Response(result.data, status=status.HTTP_201_CREATED)
-
-        print("Serializer errors:", serializer.errors)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-# Handles uploading files after a record is created (via UPIN)
-@api_view(['PUT'])
+# Handles uploading files after a record is created (via UPIN) AND listing files for a record
+@api_view(['GET', 'PUT'])
+@parser_classes([MultiPartParser, FormParser])
 def upload_record_files(request, upin):
     record = get_object_or_404(Record, UPIN=upin)
-    files = request.FILES.getlist('files')
-    names = request.data.getlist('names[]') or request.data.getlist('names')
-    categories = request.data.getlist('categories[]') or request.data.getlist('categories')
 
-    for idx, file in enumerate(files):
-        display_name = names[idx] if idx < len(names) else file.name
-        category = categories[idx] if idx < len(categories) else ""
-        RecordFile.objects.create(
-            record=record,
-            uploaded_file=file,
-            display_name=display_name,
-            category=category
-        )
+    if request.method == 'GET':
+        files = RecordFile.objects.filter(record=record)
+        if not files.exists():
+            return Response({'error': f"No files found for the record with UPIN '{upin}'."}, status=status.HTTP_404_NOT_FOUND)
 
-    return Response({'status': 'files uploaded'}, status=status.HTTP_200_OK)
+        serializer = RecordFileSerializer(files, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+    elif request.method == 'PUT':
+        files = request.FILES.getlist('files')
+        names = request.data.getlist('names[]') or request.data.getlist('names')
+        categories = request.data.getlist('categories[]') or request.data.getlist('categories')
+
+        if len(files) != len(names) or len(files) != len(categories):
+            return Response({'error': 'Mismatch between files, names, and categories.'}, status=400)
+
+        for idx, file in enumerate(files):
+            display_name = names[idx] if idx < len(names) else file.name
+            category = categories[idx] if idx < len(categories) else "Uncategorized"
+            content_type = file.content_type or mimetypes.guess_type(file.name)[0] or "Unknown"
+
+            # Generate hash for the file content
+            hasher = hashlib.sha256()
+            for chunk in file.chunks():
+                hasher.update(chunk)
+            file_hash = hasher.hexdigest()
+
+            
+            # Check if the file already exists using the hash
+            if not RecordFile.objects.filter(
+                file_hash=file_hash, record=record,
+                display_name=display_name,
+                uploaded_file__name=file.name,
+                category=category,
+                type=content_type
+            ).exists():
+                RecordFile.objects.create(
+                  record=record,
+                  uploaded_file=file,
+                  display_name=display_name,
+                  category=category,
+                  type=content_type
+               )
+
+        
+        return Response({'status': 'files uploaded successfully'}, status=200)
+
+    
+    return Response({'error': 'Method not allowed'}, status=405)
 class RecordViewSet(viewsets.ModelViewSet):
     queryset = Record.objects.all()
     serializer_class = RecordSerializer
@@ -293,3 +257,111 @@ class RecordViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(records, many=True)
             return Response(serializer.data)
         return super().list(request, *args, **kwargs)
+
+
+@api_view(['GET', 'PUT'])
+@parser_classes([MultiPartParser, FormParser])
+def upload_files(request, upin):
+    """
+    Handles uploading files to a record identified by UPIN and retrieving files for a record.
+    """
+    record = get_object_or_404(Record, UPIN=upin)
+
+    if request.method == 'GET':
+        files = RecordFile.objects.filter(record=record)
+
+        if not files.exists():
+            return Response({'error': f"No files found for the record with UPIN '{upin}'."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = RecordFileSerializer(files, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    elif request.method == 'PUT':
+        files = request.FILES.getlist('files')
+        names = request.data.getlist('names[]') or request.data.getlist('names')
+        categories = request.data.getlist('categories[]') or request.data.getlist('categories')
+
+        if len(files) != len(names) or len(files) != len(categories):
+            return Response({'error': 'Mismatch between files, names, and categories.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        for idx, file in enumerate(files):
+            display_name = names[idx] if idx < len(names) else file.name
+            category = categories[idx] if idx < len(categories) else "Uncategorized"
+            content_type = file.content_type or mimetypes.guess_type(file.name)[0] or "Unknown"
+
+            # Generate hash for the file content
+            hasher = hashlib.sha256()
+            for chunk in file.chunks():
+                hasher.update(chunk)
+            file_hash = hasher.hexdigest()
+
+            # Prevent duplicate files
+            if not RecordFile.objects.filter(
+                file_hash=file_hash, record=record,
+                display_name=display_name,
+                uploaded_file__name=file.name,
+                category=category,
+                type=content_type
+            ).exists():
+                RecordFile.objects.create(
+                    record=record,
+                    uploaded_file=file,
+                    display_name=display_name,
+                    category=category,
+                    type=content_type
+                )
+
+        return Response({'status': 'files uploaded successfully'}, status=status.HTTP_200_OK)
+
+    return Response({'error': 'Method not allowed'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+##############
+#######
+class FileDetailView(APIView):
+    def put(self, request, pk):
+        file = get_object_or_404(RecordFile, pk=pk)
+        uploaded_file = request.FILES.get("uploaded_file")
+        if uploaded_file:
+            file.uploaded_file = uploaded_file
+            file.save()
+            return Response({"message": "File replaced successfully."}, status=status.HTTP_200_OK)
+        return Response({"error": "No file provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        file = get_object_or_404(RecordFile, pk=pk)
+        if file.category == "required":
+            return Response(
+                {"error": "Required files cannot be deleted."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        file.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    def post(self, request, upin):
+        record = get_object_or_404(Record, UPIN=upin)
+        uploaded_file = request.FILES.get("uploaded_file")
+        display_name = request.data.get("display_name")
+        category = request.data.get("category", "additional")
+
+        if uploaded_file and display_name:
+            RecordFile.objects.create(
+                record=record,
+                uploaded_file=uploaded_file,
+                display_name=display_name,
+                category=category,
+            )
+            return Response({"message": "File uploaded successfully."}, status=status.HTTP_201_CREATED)
+        return Response({"error": "Invalid file or display name."}, status=status.HTTP_400_BAD_REQUEST)
+
+class RecordUpdateView(APIView):
+    def put(self, request, upin):
+        record = Record.objects.filter(UPIN=upin).first()
+        if not record:
+            return Response({"error": "Record not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = RecordSerializer(record, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)   
