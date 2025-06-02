@@ -152,6 +152,19 @@ export default function EditFile() {
       showToast("Please fix validation errors before saving.", "error");
       return;
     }
+
+    // Check if all fields are filled
+    if (
+      !formData ||
+      Object.values(formData).some((value) => {
+        // Ensure value is a string before calling trim()
+        return !value || (typeof value === "string" && value.trim() === "");
+      })
+    ) {
+      showToast("Please fill all fields before saving the record.", "error");
+      return;
+    }
+
     try {
       // Validate UPIN before proceeding
       if (!formData.UPIN || formData.UPIN.trim() === "") {
@@ -369,6 +382,7 @@ export default function EditFile() {
                         [key]: error,
                       }));
                     }}
+                    readOnly={key === "UPIN"} // Make UPIN field read-only
                   />
                   {formErrors[key] && (
                     <div
@@ -406,14 +420,7 @@ export default function EditFile() {
                             file.uploaded_file.split("/").pop()}
                         </span>
                         <span className="file-category">{file.category}</span>
-                        <a
-                          className="file-view-link"
-                          href={`http://localhost:8000${file.uploaded_file}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          View
-                        </a>
+
                         <input
                           type="file"
                           onChange={(e) =>
@@ -424,6 +431,14 @@ export default function EditFile() {
                             )
                           }
                         />
+                        <a
+                          className="file-view-link"
+                          href={`http://localhost:8000${file.uploaded_file}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          View
+                        </a>
                         {file.category !== "required" && (
                           <button
                             className="delete-file-btn"
